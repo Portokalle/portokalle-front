@@ -11,17 +11,30 @@ import DashboardNotificationsBell from '../components/DashboardNotificationsBell
 import Loader from '../components/Loader';
 import { useAppointmentStore } from '../../store/appointmentStore';
 import { AppointmentsTable } from '../components/AppointmentsTable';
+import RedirectingModal from '../components/RedirectingModal';
 import UpcomingAppointment from '../components/UpcomingAppointment';
 import { useDashboardActions } from '../../hooks/useDashboardActions';
 import ProfileWarning from '../components/ProfileWarning';
 
 export default function Dashboard() {
+  const [showRedirecting, setShowRedirecting] = useState(false);
   const { user, role, loading: authLoading } = useAuth();
   const { totalAppointments, fetchAppointments } = useDashboardStore();
   const { appointments, isAppointmentPast, fetchAppointments: fetchAllAppointments } = useAppointmentStore();
-  const { handleJoinCall, handlePayNow } = useDashboardActions();
+  const { handleJoinCall: baseHandleJoinCall, handlePayNow } = useDashboardActions();
   const [profileIncomplete, setProfileIncomplete] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
+
+  // Wrap handleJoinCall to show modal
+  const handleJoinCall = async (appointmentId: string) => {
+    setShowRedirecting(true);
+    try {
+      await baseHandleJoinCall(appointmentId);
+    } catch {
+      setShowRedirecting(false);
+      // baseHandleJoinCall already alerts on error
+    }
+  };
 
   const fetchProfileStatus = useCallback(async () => {
     if (user && role) {
@@ -38,8 +51,8 @@ export default function Dashboard() {
           await fetchAppointments(user.uid, role);
           await fetchAllAppointments(user.uid, role === UserRole.Doctor); // Ensure appointments store is also loaded
         }
-  } catch {
-  } finally {
+      } catch {
+      } finally {
         setLoading(false);
       }
     };
@@ -51,6 +64,7 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <RedirectingModal show={showRedirecting} />
       <h1 className="text-3xl font-extrabold text-gray-800 mb-8 text-center">
         Welcome to Your {role || 'User'} Dashboard
       </h1>

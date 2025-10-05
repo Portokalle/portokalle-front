@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import RedirectingModal from '../../components/RedirectingModal';
 import { useAppointmentStore } from "../../../store/appointmentStore";
 import { useAuth } from "../../../context/AuthContext";
 import { useVideoStore } from "../../../store/videoStore";
@@ -11,6 +12,7 @@ import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '../../../config/userRoles';
 
 
 function AppointmentsPage() {
+  const [showRedirecting, setShowRedirecting] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const {
     appointments,
@@ -66,8 +68,10 @@ function AppointmentsPage() {
   // Join call handler
   const handleJoinCall = async (appointmentId: string) => {
     try {
+      setShowRedirecting(true);
       setAuthStatus(!!user, user?.uid || null, user?.name || null);
       if (!user?.uid) {
+        setShowRedirecting(false);
         alert('You must be logged in to join a call. Please log in and try again.');
         return;
       }
@@ -84,7 +88,8 @@ function AppointmentsPage() {
       window.localStorage.setItem('videoSessionRoomCode', roomCode);
       window.localStorage.setItem('videoSessionUserName', patientName);
       window.location.href = '/dashboard/appointments/video-session';
-  } catch {
+    } catch {
+      setShowRedirecting(false);
       alert('An error occurred. Please try again.');
     }
   };
@@ -93,6 +98,7 @@ function AppointmentsPage() {
 
   return (
     <div>
+      <RedirectingModal show={showRedirecting} />
       <div className="card bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title text-lg md:text-2xl">Your Appointments</h2>
