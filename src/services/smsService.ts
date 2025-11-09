@@ -2,13 +2,17 @@ import axios from 'axios';
 import qs from 'qs';
 import { getUserPhoneNumber } from './userService';
 
-const VONAGE_API_KEY = process.env.NEXT_PUBLIC_VONAGE_API_KEY || '9742b306';
-const VONAGE_API_SECRET = process.env.NEXT_PUBLIC_VONAGE_API_SECRET || 'SCKmmzn7gyzBccaI';
+const VONAGE_API_KEY = process.env.NEXT_PUBLIC_VONAGE_API_KEY;
+const VONAGE_API_SECRET = process.env.NEXT_PUBLIC_VONAGE_API_SECRET;
 const VONAGE_SMS_URL = 'https://rest.nexmo.com/sms/json';
 const FROM = 'Portokalle';
 
 export async function sendSMSFromFirestore(userId: string, text: string): Promise<void> {
   try {
+    if (!VONAGE_API_KEY || !VONAGE_API_SECRET) {
+      throw new Error('Vonage API credentials are not configured');
+    }
+    
     const to = await getUserPhoneNumber(userId);
     if (!to) throw new Error('Phone number not found for user: ' + userId);
     const data = {
@@ -21,8 +25,6 @@ export async function sendSMSFromFirestore(userId: string, text: string): Promis
     await axios.post(VONAGE_SMS_URL, qs.stringify(data), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-    if (typeof window === 'undefined') {
-    }
   } catch (error) {
     throw error;
   }
