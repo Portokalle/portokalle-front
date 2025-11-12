@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
+import '../../i18n/i18n';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
@@ -9,6 +11,7 @@ import { testFirebaseConnection } from '../../services/firebaseTest';
 import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 function LoginPageContent() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,7 +26,7 @@ function LoginPageContent() {
   // Test Firebase connectivity on component mount, but don't block login if it fails
   useEffect(() => {
     testFirebaseConnection().catch(() => {
-      setErrorMsg('Warning: Firebase connection issues detected. Some features may be limited.');
+  setErrorMsg(t('firebaseWarning'));
     });
   }, []);
 
@@ -34,11 +37,11 @@ function LoginPageContent() {
     try {
       console.log('Login: start');
       if (!navigator.onLine) {
-        throw new Error('You are offline. Please check your internet connection and try again.');
+  throw new Error(t('offlineError'));
       }
       if (!executeRecaptcha) {
         console.log('reCAPTCHA not ready');
-        throw new Error('reCAPTCHA not ready');
+  throw new Error(t('recaptchaNotReady'));
       }
       // Get reCAPTCHA token
       const token = await executeRecaptcha('login');
@@ -52,7 +55,7 @@ function LoginPageContent() {
       const recaptchaData = await recaptchaRes.json();
       console.log('reCAPTCHA response:', recaptchaData);
       if (!recaptchaData.success) {
-        setErrorMsg('reCAPTCHA failed. Please try again.');
+  setErrorMsg(t('recaptchaFailed'));
         setLoading(false);
         return;
       }
@@ -61,13 +64,13 @@ function LoginPageContent() {
       await login(email, password);
       // Verify if the 'auth-token' cookie is set
       if (!document.cookie.includes('auth-token=')) {
-        setErrorMsg('Warning: Authentication token not set properly. Try again or contact support.');
+  setErrorMsg(t('authTokenWarning'));
         setLoading(false);
         return;
       }
       window.location.href = fromPath;
     } catch (err) {
-      setErrorMsg('An unknown error occurred');
+  setErrorMsg(t('unknownError'));
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -93,7 +96,7 @@ function LoginPageContent() {
             </div>
           </div>
 
-          <h2 className="card-title text-2xl font-bold text-center mx-auto mb-4 text-gray-800">Login</h2>
+          <h2 className="card-title text-2xl font-bold text-center mx-auto mb-4 text-gray-800">{t('loginTitle')}</h2>
 
           {errorMsg && (
             <div className="alert alert-error mt-4">
@@ -110,11 +113,11 @@ function LoginPageContent() {
           >
             <div>
               <label className="label">
-                <span className="label-text text-gray-700">Email</span>
+                <span className="label-text text-gray-700">{t('email')}</span>
               </label>
               <input
                 type="email"
-                placeholder="your.email@example.com"
+                placeholder={t('emailPlaceholder')}
                 className="input input-bordered w-full"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -124,14 +127,14 @@ function LoginPageContent() {
 
             <div>
               <label className="label">
-                <span className="label-text text-gray-700">Password</span>
+                <span className="label-text text-gray-700">{t('password')}</span>
                 <Link href="/forgot-password" className="label-text-alt link link-hover text-primary">
-                  Forgot password?
+                  {t('forgotPassword')}
                 </Link>
               </label>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
                 className="input input-bordered w-full"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -166,23 +169,23 @@ function LoginPageContent() {
                       d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                     ></path>
                   </svg>
-                  Logging in...
+                  {t('loggingIn')}
                 </span>
               ) : (
-                'Login'
+                t('loginButton')
               )}
             </button>
             {!isRecaptchaReady && (
-              <div className="text-sm text-gray-500 mt-2">reCAPTCHA is loading, please wait...</div>
+              <div className="text-sm text-gray-500 mt-2">{t('recaptchaLoading')}</div>
             )}
           </form>
 
-          <div className="divider my-6">OR</div>
+          <div className="divider my-6">{t('orDivider')}</div>
 
           <div className="text-center">
-            <p className="mb-2 text-gray-700">Don&apos;t have an account?</p>
+            <p className="mb-2 text-gray-700">{t('noAccount')}</p>
             <Link href="/register" className="btn btn-outline btn-wide">
-              Register Now
+              {t('registerNow')}
             </Link>
           </div>
         </div>

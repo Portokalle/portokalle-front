@@ -1,5 +1,23 @@
-{
+  {
   "welcome": "Welcome",
+  "loginTitle": "Login",
+  "email": "Email",
+  "emailPlaceholder": "your.email@example.com",
+  "password": "Password",
+  "passwordPlaceholder": "••••••••",
+  "forgotPassword": "Forgot password?",
+  "loggingIn": "Logging in...",
+  "loginButton": "Login",
+  "recaptchaLoading": "reCAPTCHA is loading, please wait...",
+  "orDivider": "OR",
+  "noAccount": "Don't have an account?",
+  "registerNow": "Register Now",
+  "firebaseWarning": "Warning: Firebase connection issues detected. Some features may be limited.",
+  "offlineError": "You are offline. Please check your internet connection and try again.",
+  "recaptchaNotReady": "reCAPTCHA not ready",
+  "recaptchaFailed": "reCAPTCHA failed. Please try again.",
+  "authTokenWarning": "Warning: Authentication token not set properly. Try again or contact support.",
+  "unknownError": "An unknown error occurred",
   "about": "About us",
   "contact": "Contact",
   "dashboard": "Dashboard",
@@ -7,5 +25,11 @@
   "registerNow": "Register now",
   "individuals": "Individuals",
   "doctors": "Doctors",
-  "clinicians": "Clinicians"
+  "clinicians": "Clinicians",
+  "notifications": "Notifications",
+  "logout": "Logout",
+  "Dashboard": "Dashboard",
+  "Appointments": "Appointments",
+  "Profile": "Profile",
+  "Settings": "Settings"
 }
