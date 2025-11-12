@@ -2,5 +2,10 @@
   "welcome": "Mirësevini",
   "about": "Rreth nesh",
   "contact": "Kontakt",
-  "dashboard": "Paneli"
+  "dashboard": "Paneli",
+  "signIn": "Hyr",
+  "registerNow": "Regjistrohu tani",
+  "individuals": "Individë",
+  "doctors": "Mjekë",
+  "clinicians": "Klinicistë"
 }
