@@ -2,5 +2,10 @@
   "welcome": "Welcome",
   "about": "About us",
   "contact": "Contact",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "signIn": "Sign in",
+  "registerNow": "Register now",
+  "individuals": "Individuals",
+  "doctors": "Doctors",
+  "clinicians": "Clinicians"
 }

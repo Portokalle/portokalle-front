@@ -1,14 +1,26 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
+import '../../i18n/i18n';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+// FontAwesome language icon for international language
+import { FaLanguage } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 
 export default function NavBar() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { t, i18n } = useTranslation();
+  const [lang, setLang] = useState(i18n.language);
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const handleLanguageChange = (lng: string) => {
+    i18n.changeLanguage(lng);
+    setLang(lng);
+    setShowLangMenu(false);
+  };
 
   const handleLoginClick = () => {
     setIsMenuOpen(false);
@@ -74,7 +86,7 @@ export default function NavBar() {
             onClick={handleLoginClick}
           >
             <i className="fa-solid fa-arrow-right text-lg"></i>
-            <span>Sign in</span>
+            <span>{t('signIn')}</span>
           </button>
         </div>
 
@@ -85,21 +97,21 @@ export default function NavBar() {
             className="text-black hover:text-[#ea580c] cursor-pointer"
             onClick={() => handleNavItemClick('/individuals')}
           >
-            Individuals
+            {t('individuals')}
           </Link>
           <Link
             href="/doctors"
             className="text-black hover:text-[#ea580c] cursor-pointer"
             onClick={() => handleNavItemClick('/organizations')}
           >
-            Doctors
+            {t('doctors')}
           </Link>
           <Link
             href="/clinicians"
             className="text-black hover:text-[#ea580c] cursor-pointer"
             onClick={() => handleNavItemClick('/clinicians')}
           >
-            Clinicians
+            {t('clinicians')}
           </Link>
         </nav>
 
@@ -109,14 +121,44 @@ export default function NavBar() {
             className="text-[#ea580c] hover:underline font-medium cursor-pointer"
             onClick={handleLoginClick}
           >
-            Sign in
+            {t('signIn')}
           </button>
           <button
             className="bg-[#ea580c] text-white rounded-full px-6 py-2 font-semibold hover:bg-orange-700 transition-colors cursor-pointer"
             onClick={handleSignUpClick}
           >
-            Register now
+            {t('registerNow')}
           </button>
+          {/* Modern Globe Icon Language Switcher */}
+          <div className="flex items-center ml-4 relative">
+            <button
+              className={`flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 transition-colors shadow focus:outline-none ${showLangMenu ? 'ring-2 ring-[#ea580c]' : ''}`}
+              style={{ transition: 'background 0.2s' }}
+              onClick={() => setShowLangMenu((v) => !v)}
+              aria-label="Select language"
+              type="button"
+            >
+              <FaLanguage className={`w-5 h-5 ${showLangMenu ? 'text-white' : 'text-[#ea580c]'}`} style={{ color: showLangMenu ? '#fff' : '#ea580c', transition: 'color 0.2s' }} />
+            </button>
+            {showLangMenu && (
+              <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50 flex flex-col py-2 animate-fade-in">
+                <button
+                  className={`flex items-center gap-2 px-4 py-2 text-sm w-full hover:bg-orange-50 transition-colors ${lang === 'en' ? 'font-bold text-[#ea580c]' : 'text-gray-700'}`}
+                  onClick={() => handleLanguageChange('en')}
+                  aria-label="Switch to English"
+                >
+                  <span role="img" aria-label="English">🇬🇧</span> English
+                </button>
+                <button
+                  className={`flex items-center gap-2 px-4 py-2 text-sm w-full hover:bg-orange-50 transition-colors ${lang === 'al' ? 'font-bold text-[#ea580c]' : 'text-gray-700'}`}
+                  onClick={() => handleLanguageChange('al')}
+                  aria-label="Switch to Albanian"
+                >
+                  <span role="img" aria-label="Albanian">🇦🇱</span> Shqip
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -130,21 +172,21 @@ export default function NavBar() {
               className="text-blue-600 py-4 px-6 border-b border-gray-100 cursor-pointer"
               onClick={() => handleNavItemClick('/individuals')}
             >
-              Individuals
+              {t('individuals')}
             </Link>
             <Link
               href="/doctors"
               className="text-blue-600 py-4 px-6 border-b border-gray-100 cursor-pointer"
               onClick={() => handleNavItemClick('/organizations')}
             >
-              Doctors
+              {t('doctors')}
             </Link>
             <Link
               href="/clinicians"
               className="text-blue-600 py-4 px-6 border-b border-gray-100 cursor-pointer"
               onClick={() => handleNavItemClick('/clinicians')}
             >
-              Clinicians
+              {t('clinicians')}
             </Link>
           </nav>
 
@@ -154,7 +196,7 @@ export default function NavBar() {
               className="bg-[#ea580c] text-white rounded-full py-3 px-6 w-full font-semibold cursor-pointer"
               onClick={handleSignUpClick}
             >
-              Register now
+              {t('registerNow')}
             </button>
           </div>
         </div>
