@@ -1,4 +1,23 @@
-  {
+ {
+
+ "findADoctor": "Find a Doctor",
+  "doctorsDashboard": "Doctor's Dashboard",
+  "upcomingRequests": "Upcoming Requests",
+  "noUpcomingRequests": "No upcoming requests.",
+  "appointmentWith": "Appointment with {{doctorId}}",
+  "appointmentType": "Type: {{appointmentType}}",
+  "join": "Join",
+  "loadingDashboard": "Loading dashboard...",
+  "searchByNameOrSpecializations": "Search by name or specializations...",
+  "search": "Search",
+  "loading": "Loading...",
+  "noSpecializationsAvailable": "No specializations available",
+  "noDoctorsFound": "No doctors found.",
+  "close": "Close",
+  "appointmentSuccess": "SUCCESS",
+  "appointmentRequestSent": "Your appointment request has been sent successfully.",
+  "appointmentNotificationInfo": "You will be notified once it is accepted or declined.",
+  "goToAppointmentHistory": "Go to Appointment History",
   "welcome": "Welcome",
   "loginTitle": "Login",
   "email": "Email",
@@ -31,5 +50,17 @@
   "Dashboard": "Dashboard",
   "Appointments": "Appointments",
   "Profile": "Profile",
-  "Settings": "Settings"
+  "Settings": "Settings",
+    "uploading": "Uploading...",
+  "chooseProfilePicture": "Choose Profile Picture",
+  "selectedFile": "Selected",
+  "name": "Name",
+  "surname": "Surname",
+  "phoneNumber": "Phone Number",
+  "doctorProfile": "Doctor Profile",
+  "about": "About",
+  "specializations": "Specializations",
+  "remove": "Remove",
+  "addSpecialization": "Add Specialization",
+  "saveChanges": "Save Changes"
 }

@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 export default function AppointmentConfirmation({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-xs p-0 overflow-hidden">
@@ -8,7 +10,7 @@ export default function AppointmentConfirmation({ onClose }: { onClose: () => vo
         <button
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-bold z-10"
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('close')}
         >
           &times;
         </button>
@@ -19,19 +21,19 @@ export default function AppointmentConfirmation({ onClose }: { onClose: () => vo
             <circle cx="24" cy="24" r="22" stroke="white" strokeWidth="3" fill="none" />
             <path d="M16 25l6 6 10-12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-white text-lg font-semibold tracking-wide">SUCCESS</span>
+          <span className="text-white text-lg font-semibold tracking-wide">{t('appointmentSuccess')}</span>
         </div>
         {/* Message Section */}
         <div className="flex flex-col items-center bg-white px-6 py-8">
           <p className="text-gray-700 text-center mb-6 text-base">
-            Your appointment request has been sent successfully.<br />You will be notified once it is accepted or declined.
+            {t('appointmentRequestSent')}<br />{t('appointmentNotificationInfo')}
           </p>
           <Link href="/dashboard/appointments" className="w-full">
             <button
               className="w-full bg-orange-400 hover:bg-orange-500 text-white font-semibold py-3 rounded-full shadow transition-all text-lg"
               style={{ boxShadow: '0 4px 16px 0 rgba(255, 152, 0, 0.15)' }}
             >
-              Go to Appointment History
+              {t('goToAppointmentHistory')}
             </button>
           </Link>
         </div>

@@ -21,7 +21,10 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  const lang = req.cookies.get('language')?.value || 'en';
+  const response = NextResponse.next();
+  response.headers.set('x-language', lang);
+  return response;
 }
 
 export const config = {
