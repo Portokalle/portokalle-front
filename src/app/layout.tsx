@@ -10,13 +10,18 @@ export const metadata: Metadata = {
   description: "Telemedicine Platform",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  let lang = 'en';
+  if (typeof window === 'undefined') {
+    // SSR: read cookie from headers
+    const cookies = require('next/headers').cookies();
+    lang = cookies.get('language')?.value || 'en';
+  } else {
+    // Client: read cookie from document
+    lang = document.cookie.match(/language=([a-zA-Z-]+)/)?.[1] || 'en';
+  }
   return (
-    <html lang="en" data-theme="light">
+    <html lang={lang} data-theme="light">
       <head>
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}

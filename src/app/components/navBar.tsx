@@ -17,6 +17,7 @@ export default function NavBar() {
   const [lang, setLang] = useState(i18n.language);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const handleLanguageChange = (lng: string) => {
+    document.cookie = `language=${lng}; path=/; max-age=31536000`;
     i18n.changeLanguage(lng);
     setLang(lng);
     setShowLangMenu(false);
