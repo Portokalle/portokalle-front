@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Image from "next/image";
 
 export default function DoctorFeaturesSection() {
+  const { t } = useTranslation();
+  
   return (
   <section className="relative min-h-[50vh] flex items-center justify-center bg-white py-16 px-2 overflow-hidden mb-12">
       <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row-reverse items-center gap-12 relative">
@@ -18,32 +21,32 @@ export default function DoctorFeaturesSection() {
         </div>
         {/* Left: Features */}
         <div className="flex-1 flex flex-col justify-center items-center md:items-start px-2 md:px-0">
-          <h3 className="text-sm font-semibold text-orange-600 uppercase tracking-widest mb-2">What We Offer Doctors</h3>
-          <h2 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-4">Empowering your medical practice</h2>
+          <h3 className="text-sm font-semibold text-orange-600 uppercase tracking-widest mb-2">{t('whatWeOfferDoctors')}</h3>
+          <h2 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-4">{t('empoweringYourPractice')}</h2>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl text-gray-700 mb-8">
             <li className="flex flex-col items-start">
-              <span className="font-semibold text-gray-900 mb-1">Track patient visits & consultations</span>
-              <span className="text-sm text-gray-600">Monitor your impact in real time</span>
+              <span className="font-semibold text-gray-900 mb-1">{t('trackPatientVisits')}</span>
+              <span className="text-sm text-gray-600">{t('monitorImpactRealTime')}</span>
             </li>
             <li className="flex flex-col items-start">
-              <span className="font-semibold text-gray-900 mb-1">Transparent payment per consultation</span>
-              <span className="text-sm text-gray-600">Know your earnings instantly</span>
+              <span className="font-semibold text-gray-900 mb-1">{t('transparentPayment')}</span>
+              <span className="text-sm text-gray-600">{t('knowEarningsInstantly')}</span>
             </li>
             <li className="flex flex-col items-start">
-              <span className="font-semibold text-gray-900 mb-1">Integrated calendar for appointments</span>
-              <span className="text-sm text-gray-600">Stay organized and never miss a visit</span>
+              <span className="font-semibold text-gray-900 mb-1">{t('integratedCalendar')}</span>
+              <span className="text-sm text-gray-600">{t('stayOrganized')}</span>
             </li>
             <li className="flex flex-col items-start">
-              <span className="font-semibold text-gray-900 mb-1">Professional profile & credentials</span>
-              <span className="text-sm text-gray-600">Showcase your expertise</span>
+              <span className="font-semibold text-gray-900 mb-1">{t('professionalProfile')}</span>
+              <span className="text-sm text-gray-600">{t('showcaseExpertise')}</span>
             </li>
             <li className="flex flex-col items-start">
-              <span className="font-semibold text-gray-900 mb-1">Support & credibility</span>
-              <span className="text-sm text-gray-600">Backed by the Portokalle team</span>
+              <span className="font-semibold text-gray-900 mb-1">{t('supportCredibility')}</span>
+              <span className="text-sm text-gray-600">{t('backedByPortokalle')}</span>
             </li>
             <li className="flex flex-col items-start">
-              <span className="font-semibold text-gray-900 mb-1">Your online clinic</span>
-              <span className="text-sm text-gray-600">Use Portokalle as your digital practice</span>
+              <span className="font-semibold text-gray-900 mb-1">{t('yourOnlineClinic')}</span>
+              <span className="text-sm text-gray-600">{t('usePortokalleDigital')}</span>
             </li>
           </ul>
         </div>
