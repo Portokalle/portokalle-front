@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db } from '../../config/firebaseconfig';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 
@@ -14,6 +15,7 @@ interface Notification {
 
 export default function DashboardNotifications({ doctorId }: { doctorId: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+    const { t } = useTranslation();
 
   useEffect(() => {
     if (!doctorId) {
@@ -39,17 +41,19 @@ export default function DashboardNotifications({ doctorId }: { doctorId: string 
 
   return (
     <div className="notifications">
-      <h2 className="text-xl font-bold mb-4">New Appointment Requests</h2>
+      <h2 className="text-xl font-bold mb-4">{t('newAppointmentRequests')}</h2>
       {notifications.length === 0 ? (
-        <p>No new appointment requests.</p>
+        <p>{t('noNewAppointmentRequests')}</p>
       ) : (
         notifications.map((notification) => (
           <div key={notification.id} className="notification-item p-3 border-b">
             <p>
-              <strong>{notification.patientName}</strong> requested a{' '}
-              <strong>{notification.appointmentType}</strong> on{' '}
-              <strong>{notification.preferredDate}</strong> at{' '}
-              <strong>{notification.preferredTime}</strong>.
+              {t('appointmentRequestText', {
+                patientName: notification.patientName,
+                appointmentType: notification.appointmentType,
+                preferredDate: notification.preferredDate,
+                preferredTime: notification.preferredTime,
+              })}
             </p>
           </div>
         ))
