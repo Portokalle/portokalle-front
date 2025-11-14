@@ -1,7 +1,10 @@
+'use client';
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DoctorSearchModal from './DoctorSearchModal';
 
 export default function DashboardDoctorSearchBar() {
+  const { t } = useTranslation();
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [searchBarPosition, setSearchBarPosition] = useState<DOMRect | null>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
@@ -27,7 +30,7 @@ export default function DashboardDoctorSearchBar() {
       >
         <input
           type="text"
-          placeholder="Search for doctors..."
+          placeholder={t('searchForDoctors')}
           className="flex-grow rounded-full px-4 py-3 text-base focus:outline-none cursor-pointer"
           readOnly
         />
