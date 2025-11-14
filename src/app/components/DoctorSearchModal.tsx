@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchDoctors } from '../../services/doctorService';
 import { Doctor } from '../../models/Doctor';
 import { useRouter } from 'next/navigation';
@@ -13,6 +14,7 @@ interface DoctorSearchModalProps {
 }
 
 export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorSearchModalProps) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +46,7 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
       );
       setFilteredDoctors(uniqueDoctors);
     } catch {
-      setError('Failed to fetch doctors. Please try again.');
+      setError(t('failedToFetchDoctors'));
     } finally {
       setLoading(false);
     }
@@ -76,18 +78,18 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
         >
           ✕
         </button>
-        <h2 className="text-xl font-bold mb-4">Search for Doctors</h2>
+        <h2 className="text-xl font-bold mb-4">{t('searchForDoctors')}</h2>
         <div className="relative flex items-center bg-gray-100 rounded-full p-2">
           <input
             type="text"
-            placeholder="Search by name or specializations..."
+            placeholder={t('searchByNameOrSpecializations')}
             className="flex-grow bg-transparent px-4 py-2 text-sm focus:outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="mt-4">
-          {loading && <p className="text-center text-gray-500 text-sm">Loading...</p>}
+          {loading && <p className="text-center text-gray-500 text-sm">{t('loading')}</p>}
           {error && <p className="text-center text-red-500 text-sm">{error}</p>}
           {filteredDoctors.length > 0 && (
             <ul className="mt-2 bg-white border border-gray-200 rounded-md shadow-sm max-h-48 overflow-auto">
@@ -101,14 +103,14 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
                   <div className="text-xs text-gray-500">
                     {doctor.specialization?.length
                       ? doctor.specialization.join(', ')
-                      : 'No specializations available'}
+                      : t('noSpecializationsAvailable')}
                   </div>
                 </li>
               ))}
             </ul>
           )}
           {!loading && searchTerm.trim().length >= 4 && filteredDoctors.length === 0 && (
-            <p className="text-center text-gray-500 text-sm">No doctors found.</p>
+            <p className="text-center text-gray-500 text-sm">{t('noDoctorsFound')}</p>
           )}
         </div>
       </div>

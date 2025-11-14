@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import CenteredLoader from './CenteredLoader';
 import { Appointment } from '../../models/Appointment';
 import { getAppointmentAction } from '../../store/appointmentActionButton';
@@ -25,6 +26,8 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
   maxRows = 3,
   loading = false,
 }) => {
+  const { t } = useTranslation();
+  
   if (loading) {
     return <CenteredLoader />;
   }
@@ -35,13 +38,13 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
         <table className="table table-zebra w-full text-sm md:text-base">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>{role === 'doctor' ? 'Patient' : 'Doctor'}</th>
-              <th>Type</th>
-              <th>Time</th>
-              <th>Notes</th>
-              <th>Status</th>
-              {showActions && <th>Actions</th>}
+              <th>{t('date')}</th>
+              <th>{role === 'doctor' ? t('patient') : t('doctor')}</th>
+              <th>{t('type')}</th>
+              <th>{t('time')}</th>
+              <th>{t('notes')}</th>
+              <th>{t('status')}</th>
+              {showActions && <th>{t('actions')}</th>}
             </tr>
           </thead>
           <tbody>
@@ -78,11 +81,11 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                       <td>{appointment.notes}</td>
                       <td>
                         {appointment.status === "accepted" ? (
-                          <span className="text-green-500 font-bold">Accepted</span>
+                          <span className="text-green-500 font-bold">{t('accepted')}</span>
                         ) : appointment.status === "rejected" ? (
-                          <span className="text-red-500 font-bold">Declined</span>
+                          <span className="text-red-500 font-bold">{t('declined')}</span>
                         ) : appointment.status === "pending" ? (
-                          <span className="text-gray-500 font-bold">Pending</span>
+                          <span className="text-gray-500 font-bold">{t('pending')}</span>
                         ) : (
                           <span className="text-yellow-500 font-bold">{appointment.status}</span>
                         )}
@@ -94,7 +97,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                               className="bg-transparent hover:bg-orange-500 text-orange-700 font-semibold hover:text-white py-2 px-4 border border-orange-500 hover:border-transparent rounded-full"
                               onClick={() => handlePayNow(appointment.id, DEFAULT_APPOINTMENT_PAYMENT_AMOUNT)}
                             >
-                              Pay Now
+                              {t('payNow')}
                             </button>
                           )}
                           {action.label === 'Join Now' && !action.disabled && (
@@ -102,7 +105,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                               className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-full"
                               onClick={() => handleJoinCall(appointment.id)}
                             >
-                              Join Now
+                              {t('joinNow')}
                             </button>
                           )}
                           {action.disabled && (
@@ -120,7 +123,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                 })
             ) : (
               <tr>
-                <td colSpan={showActions ? 7 : 6} className="text-center">No appointments found.</td>
+                <td colSpan={showActions ? 7 : 6} className="text-center">{t('noAppointmentsFound')}</td>
               </tr>
             )}
           </tbody>
@@ -148,10 +151,10 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                     <span className="text-xs text-gray-500">{appointment.preferredTime}</span>
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                    <span><span className="font-medium">{role === 'doctor' ? 'Patient:' : 'Doctor:'}</span> {role === 'doctor' ? appointment.patientName || 'N/A' : appointment.doctorName}</span>
-                    <span><span className="font-medium">Type:</span> {appointment.appointmentType}</span>
+                    <span><span className="font-medium">{role === 'doctor' ? t('patientColon') : t('doctorColon')}</span> {role === 'doctor' ? appointment.patientName || 'N/A' : appointment.doctorName}</span>
+                    <span><span className="font-medium">{t('typeColon')}</span> {appointment.appointmentType}</span>
                   </div>
-                  <div className="text-sm text-gray-600"><span className="font-medium">Notes:</span> {appointment.notes}</div>
+                  <div className="text-sm text-gray-600"><span className="font-medium">{t('notesColon')}</span> {appointment.notes}</div>
                   <div className="flex items-center gap-2 mt-1">
                     <span className={
                       appointment.status === "accepted"
@@ -163,11 +166,11 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                         : "text-yellow-500 font-bold"
                     }>
                       {appointment.status === "accepted"
-                        ? "Accepted"
+                        ? t('accepted')
                         : appointment.status === "rejected"
-                        ? "Declined"
+                        ? t('declined')
                         : appointment.status === "pending"
-                        ? "Pending"
+                        ? t('pending')
                         : appointment.status}
                     </span>
                     {showActions && (
@@ -177,7 +180,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                             className="ml-auto bg-transparent hover:bg-orange-500 text-orange-700 font-semibold hover:text-white py-1 px-3 border border-orange-500 hover:border-transparent rounded-full text-xs"
                             onClick={() => handlePayNow(appointment.id, DEFAULT_APPOINTMENT_PAYMENT_AMOUNT)}
                           >
-                            Pay Now
+                            {t('payNow')}
                           </button>
                         )}
                         {action.label === 'Join Now' && !action.disabled && (
@@ -185,7 +188,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                             className="ml-auto bg-orange-500 hover:bg-orange-700 text-white font-bold py-1 px-3 rounded-full text-xs"
                             onClick={() => handleJoinCall(appointment.id)}
                           >
-                            Join Now
+                            {t('joinNow')}
                           </button>
                         )}
                         {action.disabled && (
@@ -203,7 +206,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
               );
             })
         ) : (
-          <div className="text-center text-gray-500">No appointments found.</div>
+          <div className="text-center text-gray-500">{t('noAppointmentsFound')}</div>
         )}
       </div>
     </>

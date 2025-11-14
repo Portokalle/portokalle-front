@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,7 +13,6 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import AddToHomeScreenPrompt from '../AddToHomeScreenPrompt';
 // import IosInstallPrompt from '../../utils/IosInstallPrompt';
 import { useInitializeAppointments } from '../../store/appointmentStore';
 import { useAuth } from '@/context/AuthContext';
@@ -98,11 +97,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           style={{ maxHeight: '2rem' }}
         />
       </div>
-
-      {/* Add to Home Screen Prompt for mobile */}
-      <AddToHomeScreenPrompt />
-      {/* <IosInstallPrompt /> */}
-
       {/* Main Content Area */}
       <div className={`flex-grow transition-all duration-300 pt-16 md:pt-0 ${sidebarOpen && 'md:ml-64'} md:ml-16`}>
         <header className="bg-white shadow-md hidden md:block">

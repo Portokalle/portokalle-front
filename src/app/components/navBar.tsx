@@ -148,14 +148,14 @@ export default function NavBar() {
                   onClick={() => handleLanguageChange('en')}
                   aria-label="Switch to English"
                 >
-                  <span role="img" aria-label="English">🇬🇧</span> English
+                  <span role="img" aria-label="English">🇬🇧</span> {t('english')}
                 </button>
                 <button
                   className={`flex items-center gap-2 px-4 py-2 text-sm w-full hover:bg-orange-50 transition-colors ${lang === 'al' ? 'font-bold text-[#ea580c]' : 'text-gray-700'}`}
                   onClick={() => handleLanguageChange('al')}
                   aria-label="Switch to Albanian"
                 >
-                  <span role="img" aria-label="Albanian">🇦🇱</span> Shqip
+                  <span role="img" aria-label="Albanian">🇦🇱</span> {t('albanian')}
                 </button>
               </div>
             )}
