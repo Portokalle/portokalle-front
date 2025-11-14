@@ -1,12 +1,17 @@
+'use client';
+import { useTranslation } from 'react-i18next';
+
 interface ProfileWarningProps {
   show: boolean;
 }
 
 export default function ProfileWarning({ show }: ProfileWarningProps) {
+  const { t } = useTranslation();
+  
   if (!show) return null;
   return (
     <div className="alert alert-warning mb-6">
-      <span>Your profile is incomplete. Please complete your profile</span>
+      <span>{t('profileIncompleteWarning')}</span>
     </div>
   );
 }
