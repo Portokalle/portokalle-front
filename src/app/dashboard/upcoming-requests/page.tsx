@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchAppointments } from '../../../services/appointmentsService';
+import { useTranslation } from 'react-i18next';
 
 interface Appointment {
   id: string;
@@ -15,6 +16,7 @@ export default function UpcomingRequestsPage() {
   const [requests, setRequests] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -26,41 +28,40 @@ export default function UpcomingRequestsPage() {
         if (error instanceof Error) {
           alert(error.message);
         } else {
-          alert('An unknown error occurred.');
+          alert(t('unknownError'));
         }
       } finally {
         setLoading(false);
       }
     };
-
     fetchRequests();
-  }, []);
+  }, [t]);
 
   const handleJoin = (requestId: string) => {
     router.push(`/dashboard/chat-room/${requestId}`);
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>{t('loading')}</div>;
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Upcoming Requests</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('upcomingRequests')}</h1>
       {requests.length === 0 ? (
-        <p>No upcoming requests.</p>
+        <p>{t('noUpcomingRequests')}</p>
       ) : (
         <div className="space-y-4">
           {requests.map((request) => (
             <div key={request.id} className="card bg-base-100 shadow-md">
               <div className="card-body">
-                <h2 className="card-title">Appointment with {request.doctorId}</h2>
-                <p>Type: {request.appointmentType}</p>
+                <h2 className="card-title">{t('appointmentWith', { doctorId: request.doctorId })}</h2>
+                <p>{t('appointmentType', { appointmentType: request.appointmentType })}</p>
                 <button
                   className="btn btn-primary"
                   onClick={() => handleJoin(request.id)}
                 >
-                  Join
+                  {t('join')}
                 </button>
               </div>
             </div>
@@ -70,3 +71,4 @@ export default function UpcomingRequestsPage() {
     </div>
   );
 }
+  
