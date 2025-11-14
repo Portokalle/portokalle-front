@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import {
   Bars3Icon,
   XMarkIcon,
@@ -12,8 +13,6 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { useEffect } from 'react';
-import AddToHomeScreenPrompt from '../AddToHomeScreenPrompt';
 // import IosInstallPrompt from '../../utils/IosInstallPrompt';
 import { useInitializeAppointments } from '../../store/appointmentStore';
 import { useAuth } from '@/context/AuthContext';
@@ -22,10 +21,10 @@ import { getNavigationPaths } from '@/store/navigationStore';
 // import { getAuth } from 'firebase/auth';
 import DashboardSidebar from '../components/DashboardSidebar';
 
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const { uid, role } = useAuth();
   useInitializeAppointments();
@@ -41,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="loading loading-spinner loading-lg"></div>
-        <span className="ml-2">Loading dashboard...</span>
+        <span className="ml-2">{t('loadingDashboard')}</span>
       </div>
     );
   }
@@ -98,11 +97,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           style={{ maxHeight: '2rem' }}
         />
       </div>
-
-      {/* Add to Home Screen Prompt for mobile */}
-      <AddToHomeScreenPrompt />
-      {/* <IosInstallPrompt /> */}
-
       {/* Main Content Area */}
       <div className={`flex-grow transition-all duration-300 pt-16 md:pt-0 ${sidebarOpen && 'md:ml-64'} md:ml-16`}>
         <header className="bg-white shadow-md hidden md:block">

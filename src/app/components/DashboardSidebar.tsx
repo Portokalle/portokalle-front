@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import '../../i18n/i18n';
 import { getAuth, signOut } from 'firebase/auth';
 import { Bars3Icon, XMarkIcon, PowerIcon, BellIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
@@ -14,6 +16,7 @@ interface DashboardSidebarProps {
 }
 
 export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems, pathname }: DashboardSidebarProps) {
+  const { t } = useTranslation();
   // Notification state
   const { user, role } = useAuth();
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
@@ -33,9 +36,12 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
 
   // Add Notifications menu item
   const enhancedNavItems = [
-    ...navItems,
+    ...navItems.map(item => ({
+      ...item,
+      name: t(item.name)
+    })),
     {
-      name: 'Notifications',
+      name: t('notifications'),
       href: '/dashboard/notifications',
       icon: (
         <span className="relative">
@@ -92,7 +98,7 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
               <PowerIcon className="h-6 w-6" />
             </span>
             <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${sidebarOpen ? 'opacity-100 ml-3 max-w-full' : 'opacity-0 max-w-0'}`}> 
-              Logout
+              {t('logout')}
             </span>
           </button>
         </div>
@@ -135,7 +141,7 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
             className="flex items-center py-2 px-3 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-lg"
           >
             <PowerIcon className="h-6 w-6 mr-2" />
-            Logout
+            {t('logout')}
           </button>
         </div>
       </div>

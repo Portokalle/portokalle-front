@@ -1,12 +1,14 @@
 
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppointmentStore } from '../../store/appointmentStore';
 import CenteredLoader from './CenteredLoader';
 import { useAuth } from '../../context/AuthContext';
 
 
 const UpcomingAppointment = () => {
+  const { t } = useTranslation();
   const { appointments, loading } = useAppointmentStore();
   const { role } = useAuth();
 
@@ -31,27 +33,27 @@ const UpcomingAppointment = () => {
   let nameValue = '';
   if (upcoming) {
     if (role === 'doctor') {
-      nameLabel = 'Patient';
-      nameValue = upcoming.patientName || 'Unknown';
+      nameLabel = t('patient');
+      nameValue = upcoming.patientName || t('unknown');
     } else {
-      nameLabel = 'Doctor';
-      nameValue = upcoming.doctorName || 'Unknown';
+      nameLabel = t('doctor');
+      nameValue = upcoming.doctorName || t('unknown');
     }
   }
 
   return (
     <div className="stats shadow h-full">
       <div className="stat">
-        <div className="stat-title">Upcoming Appointment</div>
+        <div className="stat-title">{t('upcomingAppointment')}</div>
         <div className="stat-value text-base text-orange-500">
           {loading ? (
             <CenteredLoader />
           ) : upcoming ? (
             <span className="block text-orange-500 whitespace-nowrap overflow-hidden text-ellipsis max-w-full" style={{wordBreak: 'break-word'}}>
-              {upcoming.preferredDate} at {upcoming.preferredTime} &nbsp; {nameLabel}: {nameValue}
+              {upcoming.preferredDate} {t('at')} {upcoming.preferredTime} &nbsp; {nameLabel}: {nameValue}
             </span>
           ) : (
-            <span className="text-gray-600">No upcoming appointment</span>
+            <span className="text-gray-600">{t('noUpcomingAppointment')}</span>
           )}
         </div>
       </div>

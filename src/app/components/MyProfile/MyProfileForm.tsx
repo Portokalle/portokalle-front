@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // Accept the more specific union type for field names
 interface MyProfileFormData {
@@ -50,6 +51,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
     }
   };
 
+  const { t } = useTranslation();
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-md rounded-lg p-6">
       {/* Profile Picture Preview & Upload for Doctors - Centered at Top */}
@@ -65,7 +67,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
             priority
           />
           <label className={`btn btn-primary cursor-pointer mt-2 ${uploading ? 'loading' : ''}`}>
-            {uploading ? 'Uploading...' : 'Choose Profile Picture'}
+            {uploading ? t('uploading') : t('chooseProfilePicture')}
             <input
               type="file"
               accept="image/*"
@@ -75,13 +77,13 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
             />
           </label>
           {selectedFileName && (
-            <span className="mt-2 text-sm text-gray-600">Selected: {selectedFileName}</span>
+            <span className="mt-2 text-sm text-gray-600">{t('selectedFile')}: {selectedFileName}</span>
           )}
         </div>
       )}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-2">Name</label>
+  <label className="block text-sm font-medium text-gray-600 mb-2">{t('name')}</label>
         <input
           type="text"
           value={formData.name}
@@ -90,7 +92,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-2">Surname</label>
+  <label className="block text-sm font-medium text-gray-600 mb-2">{t('surname')}</label>
         <input
           type="text"
           value={formData.surname}
@@ -99,7 +101,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-2">Email</label>
+  <label className="block text-sm font-medium text-gray-600 mb-2">{t('email')}</label>
         <input
           type="email"
           value={formData.email}
@@ -108,7 +110,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-600 mb-2">Phone Number</label>
+  <label className="block text-sm font-medium text-gray-600 mb-2">{t('phoneNumber')}</label>
         <input
           type="text"
           value={formData.phoneNumber}
@@ -120,8 +122,8 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
     {role === "doctor" && (
       <>
         <div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Doctor Profile</h2>
-          <label className="block text-sm font-medium text-gray-600 mb-2">About</label>
+    <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('doctorProfile')}</h2>
+    <label className="block text-sm font-medium text-gray-600 mb-2">{t('about')}</label>
           <textarea
             value={formData.about}
             onChange={(e) => handleInputChange(e, "about")}
@@ -129,7 +131,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">Specializations</label>
+    <label className="block text-sm font-medium text-gray-600 mb-2">{t('specializations')}</label>
           {formData.specializations.map((spec: string, index: number) => (
             <div key={index} className="flex items-center space-x-3 mb-3">
               <input
@@ -143,7 +145,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
                 onClick={() => handleRemoveField("specializations", index)}
                 className="btn btn-error btn-sm rounded-full"
               >
-                Remove
+                {t('remove')}
               </button>
             </div>
           ))}
@@ -152,14 +154,14 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
             onClick={() => handleAddField("specializations")}
             className="btn btn-primary btn-sm rounded-full"
           >
-            Add Specialization
+            {t('addSpecialization')}
           </button>
         </div>
       </>
     )}
     <div className="mt-6 text-center">
       <button type="submit" className="btn btn-primary px-8 py-3 rounded-full shadow-md hover:shadow-lg">
-        Save Changes
+        {t('saveChanges')}
       </button>
     </div>
     </form>

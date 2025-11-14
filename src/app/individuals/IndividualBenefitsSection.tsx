@@ -1,19 +1,22 @@
+import { useTranslation } from 'react-i18next';
 import Image from "next/image";
 
 export default function IndividualBenefitsSection() {
+  const { t } = useTranslation();
+  
   return (
     <section className="w-full py-16 px-2 bg-orange-50 mb-12 flex items-center justify-center">
       <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
         {/* Left: Text */}
         <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
-          <h3 className="text-sm font-semibold text-orange-600 uppercase tracking-widest mb-2">Why Portokalle?</h3>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Benefits for Individuals</h2>
+          <h3 className="text-sm font-semibold text-orange-600 uppercase tracking-widest mb-2">{t('whyPortokalle')}</h3>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">{t('benefitsForIndividuals')}</h2>
           <ul className="list-disc pl-6 space-y-2 text-gray-700 text-left">
-            <li>24/7 access to healthcare professionals</li>
-            <li>Instant appointment booking and reminders</li>
-            <li>Video, chat, and in-person consultations</li>
-            <li>All your health records in one secure place</li>
-            <li>Personalized care and follow-ups</li>
+            <li>{t('access247Healthcare')}</li>
+            <li>{t('instantAppointmentBooking')}</li>
+            <li>{t('videoCharInPerson')}</li>
+            <li>{t('allHealthRecordsSecure')}</li>
+            <li>{t('personalizedCareFollowUps')}</li>
           </ul>
         </div>
         {/* Right: Image */}
