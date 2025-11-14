@@ -1,3 +1,5 @@
+'use client';
+
 import HeroSection from '../components/heroSection';
 import NavBar from '../components/navBar';
 
@@ -13,7 +15,6 @@ export default function IndividualsPage() {
       <NavBar />
       <HeroSection 
         backgroundImage="https://portokalle-storage.fra1.digitaloceanspaces.com/img/pexels-shvetsa-4225920.jpg"
-        locale="en"
       />
   <IndividualBenefitsSection />
   <IndividualHowItWorksSection />

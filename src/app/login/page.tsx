@@ -28,7 +28,7 @@ function LoginPageContent() {
     testFirebaseConnection().catch(() => {
   setErrorMsg(t('firebaseWarning'));
     });
-  }, []);
+  }, [t]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

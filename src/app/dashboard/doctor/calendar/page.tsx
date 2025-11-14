@@ -47,7 +47,7 @@ export default function DoctorCalendarPage() {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, t]);
 
   if (loading) {
     return <Loader />;
