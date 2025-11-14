@@ -7,8 +7,10 @@ import { auth, db } from '../../config/firebaseconfig';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useTranslation } from 'react-i18next';
 
 function RegisterPageInner() {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         name: '',
         surname: '',
@@ -34,7 +36,7 @@ function RegisterPageInner() {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match.');
+            setError(t('passwordsDoNotMatch'));
             return;
         }
 
@@ -53,7 +55,7 @@ function RegisterPageInner() {
             });
             const recaptchaData = await recaptchaRes.json();
             if (!recaptchaData.success) {
-                setError('reCAPTCHA failed. Please try again.');
+                setError(t('recaptchaFailed'));
                 setLoading(false);
                 return;
             }
@@ -84,7 +86,7 @@ function RegisterPageInner() {
             setError(
                 error instanceof Error
                     ? error.message
-                    : 'Failed to register user'
+                    : t('failedToRegisterUser')
             );
         } finally {
             setLoading(false);
@@ -95,17 +97,17 @@ function RegisterPageInner() {
         <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
             <div className="card w-full max-w-md bg-base-100 shadow-xl">
                 <div className="card-body">
-                    <h2 className="card-title text-2xl font-bold text-center mx-auto mb-4 text-gray-800">Register</h2>
+                    <h2 className="card-title text-2xl font-bold text-center mx-auto mb-4 text-gray-800">{t('register')}</h2>
 
                     <form onSubmit={handleSubmit} className="form-control gap-4">
                         <div>
                             <label className="label">
-                                <span className="label-text text-gray-900">Name</span>
+                                <span className="label-text text-gray-900">{t('name')}</span>
                             </label>
                             <input
                                 type="text"
                                 name="name"
-                                placeholder="Your Name"
+                                placeholder={t('yourName')}
                                 className="input input-bordered w-full"
                                 value={formData.name}
                                 onChange={handleChange}
@@ -115,12 +117,12 @@ function RegisterPageInner() {
 
                         <div>
                             <label className="label">
-                                <span className="label-text text-gray-900">Surname</span>
+                                <span className="label-text text-gray-900">{t('surname')}</span>
                             </label>
                             <input
                                 type="text"
                                 name="surname"
-                                placeholder="Your Surname"
+                                placeholder={t('yourSurname')}
                                 className="input input-bordered w-full"
                                 value={formData.surname}
                                 onChange={handleChange}
@@ -130,12 +132,12 @@ function RegisterPageInner() {
 
                         <div>
                             <label className="label">
-                                <span className="label-text text-gray-900">Phone Number</span>
+                                <span className="label-text text-gray-900">{t('phoneNumber')}</span>
                             </label>
                             <input
                                 type="tel"
                                 name="phone"
-                                placeholder="Your Phone Number"
+                                placeholder={t('yourPhoneNumber')}
                                 className="input input-bordered w-full"
                                 value={formData.phone}
                                 onChange={handleChange}
@@ -145,12 +147,12 @@ function RegisterPageInner() {
 
                         <div>
                             <label className="label">
-                                <span className="label-text text-gray-900">Email</span>
+                                <span className="label-text text-gray-900">{t('email')}</span>
                             </label>
                             <input
                                 type="email"
                                 name="email"
-                                placeholder="your.email@example.com"
+                                placeholder={t('yourEmailPlaceholder')}
                                 className="input input-bordered w-full"
                                 value={formData.email}
                                 onChange={handleChange}
@@ -160,7 +162,7 @@ function RegisterPageInner() {
 
                         <div>
                             <label className="label">
-                                <span className="label-text text-gray-900">Password</span>
+                                <span className="label-text text-gray-900">{t('password')}</span>
                             </label>
                             <input
                                 type="password"
@@ -175,7 +177,7 @@ function RegisterPageInner() {
 
                         <div>
                             <label className="label">
-                                <span className="label-text text-gray-900">Confirm Password</span>
+                                <span className="label-text text-gray-900">{t('confirmPassword')}</span>
                             </label>
                             <input
                                 type="password"
@@ -190,7 +192,7 @@ function RegisterPageInner() {
 
                         <div>
                             <label className="label">
-                                <span className="label-text text-gray-900">Role</span>
+                                <span className="label-text text-gray-900">{t('role')}</span>
                             </label>
                             <select
                                 name="role"
@@ -198,8 +200,8 @@ function RegisterPageInner() {
                                 value={formData.role}
                                 onChange={handleChange}
                             >
-                                <option value="patient">Patient</option>
-                                <option value="doctor">Doctor</option>
+                                <option value="patient">{t('patient')}</option>
+                                <option value="doctor">{t('doctor')}</option>
                             </select>
                         </div>
 
@@ -210,16 +212,16 @@ function RegisterPageInner() {
                             className={`btn btn-primary w-full mt-2 ${loading ? 'loading' : ''}`}
                             disabled={loading}
                         >
-                            {loading ? 'Registering...' : 'Register'}
+                            {loading ? t('registering') : t('register')}
                         </button>
                     </form>
 
-                    <div className="divider my-6">OR</div>
+                    <div className="divider my-6">{t('or')}</div>
 
                     <div className="text-center">
-                        <p className="mb-2 text-gray-900">Already have an account?</p>
+                        <p className="mb-2 text-gray-900">{t('alreadyHaveAccount')}</p>
                         <Link href="/login" className="btn btn-outline btn-wide">
-                            Back to Login
+                            {t('backToLogin')}
                         </Link>
                     </div>
                 </div>
@@ -229,8 +231,8 @@ function RegisterPageInner() {
             {showModal && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                        <h3 className="text-2xl font-bold mb-4">Registration Successful!</h3>
-                        <p className="text-gray-700">You will be redirected to the login page shortly.</p>
+                        <h3 className="text-2xl font-bold mb-4">{t('registrationSuccessful')}</h3>
+                        <p className="text-gray-700">{t('redirectToLoginShortly')}</p>
                     </div>
                 </div>
             )}

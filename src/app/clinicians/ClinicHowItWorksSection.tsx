@@ -1,21 +1,23 @@
-
-
+'use client';
+import { useTranslation } from 'react-i18next';
 import { CalendarDaysIcon, UserGroupIcon, CreditCardIcon, ChartBarIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 
-const steps = [
-  { icon: UserGroupIcon, label: 'List your doctors' },
-  { icon: CalendarDaysIcon, label: 'Manage consultations as a clinic' },
-  { icon: UserCircleIcon, label: 'Doctor profiles & performance' },
-  { icon: CreditCardIcon, label: 'Collect payments easily' },
-  { icon: ChartBarIcon, label: 'View analytics & reports' },
-];
-
 export default function ClinicHowItWorksSection() {
+  const { t } = useTranslation();
+  
+  const steps = [
+    { icon: UserGroupIcon, label: t('listYourDoctors') },
+    { icon: CalendarDaysIcon, label: t('manageConsultationsAsClinic') },
+    { icon: UserCircleIcon, label: t('doctorProfilesPerformance') },
+    { icon: CreditCardIcon, label: t('collectPaymentsEasily') },
+    { icon: ChartBarIcon, label: t('viewAnalyticsReports') },
+  ];
+  
   return (
     <section className="w-full py-16 px-2 bg-white mb-12 flex items-center justify-center">
       <div className="max-w-5xl mx-auto flex flex-col items-center">
-        <h3 className="text-xs font-bold text-orange-600 uppercase tracking-widest mb-1 text-center">How It Works</h3>
-  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-8 text-center">Modern clinic management, simplified</h2>
+        <h3 className="text-xs font-bold text-orange-600 uppercase tracking-widest mb-1 text-center">{t('howItWorks')}</h3>
+  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-8 text-center">{t('modernClinicManagement')}</h2>
         <div className="relative w-full flex justify-center">
           {/* Line only on md+ screens */}
           <div className="hidden md:block absolute top-1/2 left-8 right-8 h-0.5 bg-orange-100 z-0" style={{transform: 'translateY(-50%)'}} />
@@ -31,7 +33,7 @@ export default function ClinicHowItWorksSection() {
           </ol>
         </div>
         <p className="text-sm text-gray-600 mt-8 text-center max-w-xl">
-          Use Portokalle as your online clinic: list your doctors, manage appointments and consultations, track performance, and collect payments—all in one modern, secure platform.
+          {t('usePortokalleAsOnlineClinic')}
         </p>
       </div>
     </section>
