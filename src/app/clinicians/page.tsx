@@ -1,3 +1,4 @@
+'use client';
 
 import HeroSection from '../components/heroSection';
 import NavBar from '../components/navBar';
@@ -12,7 +13,6 @@ export default function ClinicsPage() {
       <NavBar />
       <HeroSection 
         backgroundImage="https://portokalle-storage.fra1.digitaloceanspaces.com/img/pexels-karolina-grabowska-7195310.jpg"
-        locale="en"
       />
       <ClinicBenefitsSection />
       <ClinicHowItWorksSection />

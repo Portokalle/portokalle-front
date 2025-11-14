@@ -4,18 +4,19 @@ import { AuthProvider } from "../context/AuthContext";
 import Script from "next/script";
 import Analytics from "./analytics/Analytics";
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Portokalle",
   description: "Telemedicine Platform",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let lang = 'en';
   if (typeof window === 'undefined') {
     // SSR: read cookie from headers
-    const cookies = require('next/headers').cookies();
-    lang = cookies.get('language')?.value || 'en';
+    const cookieStore = await cookies();
+    lang = cookieStore.get('language')?.value || 'en';
   } else {
     // Client: read cookie from document
     lang = document.cookie.match(/language=([a-zA-Z-]+)/)?.[1] || 'en';

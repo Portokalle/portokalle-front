@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchDoctors } from '../../services/doctorService';
 import { Doctor } from '../../models/Doctor';
@@ -21,19 +21,7 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
   const [error, setError] = useState('');
   const router = useRouter();
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchTerm.trim().length >= 4) {
-        fetchDoctorsList(searchTerm.trim());
-      } else {
-        setFilteredDoctors([]);
-      }
-    }, 1000);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm]);
-
-  const fetchDoctorsList = async (term: string) => {
+  const fetchDoctorsList = useCallback(async (term: string) => {
     setLoading(true);
     setError('');
     setFilteredDoctors([]);
@@ -50,7 +38,19 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm.trim().length >= 4) {
+        fetchDoctorsList(searchTerm.trim());
+      } else {
+        setFilteredDoctors([]);
+      }
+    }, 1000);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, fetchDoctorsList]);
 
   const handleDoctorClick = (doctor: Doctor) => {
     router.push(`/dashboard/doctor/${doctor.id}`);
