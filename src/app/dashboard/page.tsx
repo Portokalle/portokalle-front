@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useDashboardStore } from '../../store/dashboardStore';
 import Link from 'next/link';
@@ -17,6 +18,7 @@ import { useDashboardActions } from '../../hooks/useDashboardActions';
 import ProfileWarning from '../components/ProfileWarning';
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [showRedirecting, setShowRedirecting] = useState(false);
   const { user, role, loading: authLoading } = useAuth();
   const { totalAppointments, fetchAppointments } = useDashboardStore();
@@ -66,7 +68,7 @@ export default function Dashboard() {
     <div className="container mx-auto px-4 py-8">
       <RedirectingModal show={showRedirecting} />
       <h1 className="text-3xl font-extrabold text-gray-800 mb-8 text-center">
-        Welcome to Your {role || 'User'} Dashboard
+        {t('welcomeToDashboard', { role: role || t('user') })}
       </h1>
       {role === UserRole.Patient && (
         <DashboardDoctorSearchBar />
@@ -81,7 +83,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="stats shadow">
           <div className="stat">
-            <div className="stat-title">Total Appointments</div>
+            <div className="stat-title">{t('totalAppointments')}</div>
             <div className="stat-value">{totalAppointments}</div>
           </div>
         </div>
@@ -90,9 +92,9 @@ export default function Dashboard() {
       <div className="card bg-base-100 shadow-xl mt-6">
         <div className="card-body">
           <div className="flex justify-between items-center">
-            <h2 className="card-title text-lg md:text-2xl">Your Appointments</h2>
+            <h2 className="card-title text-lg md:text-2xl">{t('yourAppointments')}</h2>
             <Link href="/dashboard/appointments" className="text-orange-500 hover:underline">
-              View All
+              {t('viewAll')}
             </Link>
           </div>
           <AppointmentsTable
