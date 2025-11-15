@@ -26,6 +26,7 @@ interface SessionState {
   idleMs: number;
   _intervalId: number | null;
   _lastRefresh: number;
+  _stopFn?: () => void;
   initMonitor: () => void;
   stopMonitor: () => void;
   touchActivity: () => void;
@@ -65,16 +66,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       refresh();
     };
 
-    const events: (keyof WindowEventMap | keyof DocumentEventMap)[] = [
+    const windowEvents: Array<keyof WindowEventMap> = [
       'mousemove',
       'mousedown',
       'keydown',
       'scroll',
       'touchstart',
-      'visibilitychange',
     ];
+    const documentEvents: Array<keyof DocumentEventMap> = ['visibilitychange'];
 
-    events.forEach((evt) => window.addEventListener(evt as any, handleActivity, { passive: true }));
+    windowEvents.forEach((evt) => window.addEventListener(evt, handleActivity as EventListener, { passive: true }));
+    documentEvents.forEach((evt) => document.addEventListener(evt, handleActivity as EventListener, { passive: true }));
 
     // Prime cookies on start
     refresh();
@@ -92,20 +94,24 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
     // Store a stop function bound to this closure
     const stop = () => {
-      events.forEach((evt) => window.removeEventListener(evt as any, handleActivity));
-      window.clearInterval(get()._intervalId || undefined);
+      windowEvents.forEach((evt) => window.removeEventListener(evt, handleActivity as EventListener));
+      documentEvents.forEach((evt) => document.removeEventListener(evt, handleActivity as EventListener));
+      const currentId = get()._intervalId;
+      if (currentId !== null) {
+        window.clearInterval(currentId);
+      }
       set({ isMonitoring: false, _intervalId: null });
     };
 
     // Attach stop to state so stopMonitor can call it
-    (get() as any)._stopFn = stop;
+    set({ _stopFn: stop });
   },
 
   stopMonitor: () => {
-    const anyState = get() as any;
-    if (typeof anyState._stopFn === 'function') {
-      anyState._stopFn();
-      anyState._stopFn = null;
+    const stop = get()._stopFn;
+    if (typeof stop === 'function') {
+      stop();
+      set({ _stopFn: undefined });
     }
   },
 

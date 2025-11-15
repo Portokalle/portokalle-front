@@ -2,7 +2,6 @@
 
 import { AuthProvider } from "../context/AuthContext";
 import { useSessionActivity } from "@/hooks/useSessionActivity";
-import { useEffect } from "react";
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   // Mount global idle/session activity tracker once on client
