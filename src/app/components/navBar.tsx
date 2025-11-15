@@ -9,9 +9,11 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 // FontAwesome language icon for international language
 import { FaLanguage } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function NavBar() {
   const router = useRouter();
+  const { isAuthenticated, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const [lang, setLang] = useState(i18n.language);
@@ -31,6 +33,11 @@ export default function NavBar() {
   const handleSignUpClick = () => {
     setIsMenuOpen(false);
     router.push('/register');
+  };
+
+  const handleDashboardClick = () => {
+    setIsMenuOpen(false);
+    router.push('/dashboard');
   };
 
   const handleNavItemClick = (path: string) => {
@@ -80,15 +87,27 @@ export default function NavBar() {
           </Link>
         </div>
 
-        {/* Right - Mobile Sign In */}
+        {/* Right - Mobile Auth Button */}
         <div className="md:hidden z-[10000]">
-          <button
-            className="flex items-center space-x-1 text-[#ea580c] font-medium"
-            onClick={handleLoginClick}
-          >
-            <i className="fa-solid fa-arrow-right text-lg"></i>
-            <span>{t('signIn')}</span>
-          </button>
+          {!loading && (
+            isAuthenticated ? (
+              <button
+                className="flex items-center space-x-1 text-[#ea580c] font-medium"
+                onClick={handleDashboardClick}
+              >
+                <i className="fa-solid fa-gauge-high text-lg"></i>
+                <span>{t('goToDashboard') || 'Go to Dashboard'}</span>
+              </button>
+            ) : (
+              <button
+                className="flex items-center space-x-1 text-[#ea580c] font-medium"
+                onClick={handleLoginClick}
+              >
+                <i className="fa-solid fa-arrow-right text-lg"></i>
+                <span>{t('signIn')}</span>
+              </button>
+            )
+          )}
         </div>
 
         {/* Desktop Nav */}
@@ -116,20 +135,33 @@ export default function NavBar() {
           </Link>
         </nav>
 
-        {/* Desktop Buttons */}
+        {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center space-x-4 ml-auto z-[9999]">
-          <button
-            className="text-[#ea580c] hover:underline font-medium cursor-pointer"
-            onClick={handleLoginClick}
-          >
-            {t('signIn')}
-          </button>
-          <button
-            className="bg-[#ea580c] text-white rounded-full px-6 py-2 font-semibold hover:bg-orange-700 transition-colors cursor-pointer"
-            onClick={handleSignUpClick}
-          >
-            {t('registerNow')}
-          </button>
+          {!loading && (
+            isAuthenticated ? (
+              <button
+                className="bg-[#ea580c] text-white rounded-full px-6 py-2 font-semibold hover:bg-orange-700 transition-colors cursor-pointer"
+                onClick={handleDashboardClick}
+              >
+                {t('goToDashboard') || 'Go to Dashboard'}
+              </button>
+            ) : (
+              <>
+                <button
+                  className="text-[#ea580c] hover:underline font-medium cursor-pointer"
+                  onClick={handleLoginClick}
+                >
+                  {t('signIn')}
+                </button>
+                <button
+                  className="bg-[#ea580c] text-white rounded-full px-6 py-2 font-semibold hover:bg-orange-700 transition-colors cursor-pointer"
+                  onClick={handleSignUpClick}
+                >
+                  {t('registerNow')}
+                </button>
+              </>
+            )
+          )}
           {/* Modern Globe Icon Language Switcher */}
           <div className="flex items-center ml-4 relative">
             <button
@@ -191,14 +223,25 @@ export default function NavBar() {
             </Link>
           </nav>
 
-          {/* Register Button */}
+          {/* Mobile Bottom Button */}
           <div className="p-4 border-t border-gray-100">
-            <button
-              className="bg-[#ea580c] text-white rounded-full py-3 px-6 w-full font-semibold cursor-pointer"
-              onClick={handleSignUpClick}
-            >
-              {t('registerNow')}
-            </button>
+            {!loading && (
+              isAuthenticated ? (
+                <button
+                  className="bg-[#ea580c] text-white rounded-full py-3 px-6 w-full font-semibold cursor-pointer"
+                  onClick={handleDashboardClick}
+                >
+                  {t('goToDashboard') || 'Go to Dashboard'}
+                </button>
+              ) : (
+                <button
+                  className="bg-[#ea580c] text-white rounded-full py-3 px-6 w-full font-semibold cursor-pointer"
+                  onClick={handleSignUpClick}
+                >
+                  {t('registerNow')}
+                </button>
+              )
+            )}
           </div>
         </div>
       )}

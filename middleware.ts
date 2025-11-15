@@ -7,6 +7,12 @@ export function middleware(req: NextRequest) {
   const role = req.cookies.get('userRole')?.value;
   const hasAuthToken = req.cookies.get('auth-token')?.value;
 
+  // Redirect authenticated users away from auth pages
+  if (hasAuthToken && (url.pathname === '/login' || url.pathname === '/register')) {
+    url.pathname = '/dashboard';
+    return NextResponse.redirect(url);
+  }
+
   // Protect dashboard routes
   if (url.pathname.startsWith('/dashboard')) {
     // Redirect immediately if no auth token
@@ -43,5 +49,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/dashboard/:path*', '/login', '/register'],
 };
