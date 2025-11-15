@@ -1,7 +1,5 @@
-
 'use client';
 import Loader from './Loader';
-
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -15,36 +13,38 @@ export default function RoleGuard({ children, allowedRoles, fallbackPath = '/das
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     function checkUserRole() {
       try {
         const userRole = localStorage.getItem('userRole');
+        
         if (!userRole || !allowedRoles.includes(userRole)) {
-          router.push(fallbackPath);
+          setRedirecting(true);
+          // Use replace instead of push to avoid adding to history
+          router.replace(fallbackPath);
           return false;
         }
         return true;
-  } catch {
-        router.push(fallbackPath);
+      } catch {
+        setRedirecting(true);
+        router.replace(fallbackPath);
         return false;
       }
     }
 
-    const timer = setTimeout(() => {
-      const authorized = checkUserRole();
-      setIsAuthorized(authorized);
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
+    // Check immediately, no artificial delay
+    const authorized = checkUserRole();
+    setIsAuthorized(authorized);
+    setIsLoading(false);
   }, [allowedRoles, fallbackPath, router]);
 
-
-  if (isLoading) {
-    // Use the centralized Loader component
+  // Show loader while checking or redirecting
+  if (isLoading || redirecting) {
     return <div className="flex justify-center items-center min-h-screen"><Loader /></div>;
   }
 
+  // Only render children if authorized
   return isAuthorized ? <>{children}</> : null;
 }

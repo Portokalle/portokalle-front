@@ -276,5 +276,6 @@
   "passwordsDoNotMatch": "Passwords do not match.",
   "failedToRegisterUser": "Failed to register user",
   "registrationSuccessful": "Registration Successful!",
-  "redirectToLoginShortly": "You will be redirected to the login page shortly."
+  "redirectToLoginShortly": "You will be redirected to the login page shortly.",
+  "redirecting": "Redirecting..."
 }
