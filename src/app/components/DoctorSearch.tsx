@@ -1,7 +1,7 @@
 'use client';
 
 import { useDoctorSearchStore } from '../../store/doctorSearchStore';
-import { useRouter } from 'next/navigation';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { useAuth } from '../../context/AuthContext';
 import { Doctor } from '@/models/Doctor';
 import { useEffect } from 'react';
@@ -22,7 +22,7 @@ export default function DoctorSearch({ onDoctorSelect }: DoctorSearchProps) {
     clearResults,
   } = useDoctorSearchStore();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
 
   // Reset search state when component mounts
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function DoctorSearch({ onDoctorSelect }: DoctorSearchProps) {
       setSearchTerm(''); // Clear search after selection
       clearResults(); // Also clear the results
     } else {
-      router.push(`/dashboard/doctor/${doctor.id}`);
+      nav.toDoctorProfile(doctor.id);
     }
   };
 

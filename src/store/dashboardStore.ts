@@ -3,7 +3,7 @@ import { fetchAppointments } from '../services/appointmentsService';
 import { Appointment } from '../models/Appointment';
 import { formatDate } from '../utils/dateUtils';
 import { UserRole } from '../models/UserRole';
-import { getNavigationPaths, NavigationKey, NavigationItem } from './navigationStore';
+import { getNavigationPaths, NavigationItem } from './navigationStore';
 import { JSX } from 'react';
 
 interface DashboardState {

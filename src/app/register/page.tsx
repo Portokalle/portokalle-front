@@ -5,7 +5,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebaseconfig';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +24,7 @@ function RegisterPageInner() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false); // State to control modal visibility
-    const router = useRouter();
+    const nav = useNavigationCoordinator();
     const { executeRecaptcha } = useGoogleReCaptcha();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -80,7 +80,7 @@ function RegisterPageInner() {
             setShowModal(true);
             setTimeout(() => {
                 setShowModal(false);
-                router.push("/login");
+                nav.toLogin();
             }, 3000);
         } catch (error) {
             setError(

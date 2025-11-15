@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ type HeroSectionProps = {
 export default function HeroSection({
   backgroundImage = "https://portokalle-storage.fra1.digitaloceanspaces.com/img/pexels-karolina-grabowska-7195123.jpg",
 }: HeroSectionProps) {
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
 
@@ -37,7 +37,7 @@ export default function HeroSection({
             `}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            onClick={() => router.push("/register")}
+            onClick={() => nav.toRegister()}
           >
             {t('getStarted')}
           </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { useTranslation } from 'react-i18next';
 import '../../i18n/i18n';
 import Image from 'next/image';
@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
 export default function NavBar() {
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
   const { isAuthenticated, loading } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { t, i18n } = useTranslation();
@@ -27,22 +27,22 @@ export default function NavBar() {
 
   const handleLoginClick = () => {
     setIsMenuOpen(false);
-    router.push('/login');
+    nav.toLogin();
   };
 
   const handleSignUpClick = () => {
     setIsMenuOpen(false);
-    router.push('/register');
+    nav.toRegister();
   };
 
   const handleDashboardClick = () => {
     setIsMenuOpen(false);
-    router.push('/dashboard');
+    nav.toDashboard();
   };
 
   const handleNavItemClick = (path: string) => {
     setIsMenuOpen(false);
-    router.push(path);
+    nav.pushPath(path);
   };
 
 

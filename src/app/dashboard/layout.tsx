@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import type { ReactElement } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
+import { usePathname } from 'next/navigation';
 import {
   Bars3Icon,
   XMarkIcon,
@@ -17,13 +16,13 @@ import Image from 'next/image';
 import { useInitializeAppointments } from '../../store/appointmentStore';
 import { useAuth } from '@/context/AuthContext';
 import { getNavigationPaths, NavigationKey } from '@/store/navigationStore';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import DashboardSidebar from '../components/DashboardSidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const { t } = useTranslation();
-  const router = useRouter();
+  
 
   const { role, loading, isAuthenticated } = useAuth();
   useInitializeAppointments();
@@ -35,12 +34,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, []);
 
-  // Redirect if not authenticated after loading completes
+  const nav = useNavigationCoordinator();
+  // Redirect if not authenticated after loading completes (via coordinator)
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.replace(`/login?from=${encodeURIComponent(pathname || '/dashboard')}`);
+      // Pass the actual current path only; omit fallback so we don't always tag '/dashboard'
+  nav.toLogin(pathname ?? undefined);
     }
-  }, [loading, isAuthenticated, router, pathname]);
+  }, [loading, isAuthenticated, pathname, nav]);
 
   // Show loading spinner while checking authentication
   if (loading) {
