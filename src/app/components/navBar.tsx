@@ -87,7 +87,7 @@ export default function NavBar() {
           </Link>
         </div>
 
-        {/* Right - Mobile Auth Button */}
+        {/* Right - Mobile Auth Buttons */}
         <div className="md:hidden z-[10000]">
           {!loading && (
             isAuthenticated ? (
@@ -95,17 +95,26 @@ export default function NavBar() {
                 className="flex items-center space-x-1 text-[#ea580c] font-medium"
                 onClick={handleDashboardClick}
               >
-                <i className="fa-solid fa-gauge-high text-lg"></i>
+                <i className="fa-solid fa-gauge-high text-lg" />
                 <span>{t('goToDashboard') || 'Go to Dashboard'}</span>
               </button>
             ) : (
-              <button
-                className="flex items-center space-x-1 text-[#ea580c] font-medium"
-                onClick={handleLoginClick}
-              >
-                <i className="fa-solid fa-arrow-right text-lg"></i>
-                <span>{t('signIn')}</span>
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  className="flex items-center space-x-1 text-[#ea580c] font-medium"
+                  onClick={handleLoginClick}
+                >
+                  <i className="fa-solid fa-arrow-right text-lg" />
+                  <span>{t('signIn')}</span>
+                </button>
+                <button
+                  className="flex items-center space-x-1 text-white bg-[#ea580c] px-3 py-1 rounded-full font-medium"
+                  onClick={handleSignUpClick}
+                >
+                  <i className="fa-solid fa-user-plus text-lg" />
+                  <span>{t('registerNow')}</span>
+                </button>
+              </div>
             )
           )}
         </div>
@@ -223,7 +232,7 @@ export default function NavBar() {
             </Link>
           </nav>
 
-          {/* Mobile Bottom Button */}
+          {/* Mobile Bottom Buttons */}
           <div className="p-4 border-t border-gray-100">
             {!loading && (
               isAuthenticated ? (
@@ -234,12 +243,20 @@ export default function NavBar() {
                   {t('goToDashboard') || 'Go to Dashboard'}
                 </button>
               ) : (
-                <button
-                  className="bg-[#ea580c] text-white rounded-full py-3 px-6 w-full font-semibold cursor-pointer"
-                  onClick={handleSignUpClick}
-                >
-                  {t('registerNow')}
-                </button>
+                <div className="flex flex-col gap-3">
+                  <button
+                    className="text-[#ea580c] border border-[#ea580c] rounded-full py-3 px-6 w-full font-semibold cursor-pointer bg-white"
+                    onClick={handleLoginClick}
+                  >
+                    {t('signIn')}
+                  </button>
+                  <button
+                    className="bg-[#ea580c] text-white rounded-full py-3 px-6 w-full font-semibold cursor-pointer"
+                    onClick={handleSignUpClick}
+                  >
+                    {t('registerNow')}
+                  </button>
+                </div>
               )
             )}
           </div>
