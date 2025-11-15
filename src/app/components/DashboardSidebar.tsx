@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import '../../i18n/i18n';
-import { getAuth, signOut } from 'firebase/auth';
 import { useSessionStore } from '@/store/sessionStore';
 import { Bars3Icon, XMarkIcon, PowerIcon, BellIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';

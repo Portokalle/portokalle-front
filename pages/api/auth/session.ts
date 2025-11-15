@@ -36,7 +36,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ]);
 
     return res.status(200).json({ ok: true });
-  } catch (e: any) {
-    return res.status(500).json({ error: e?.message || 'Internal error' });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Internal error';
+    return res.status(500).json({ error: message });
   }
 }
