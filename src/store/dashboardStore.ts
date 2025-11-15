@@ -3,7 +3,7 @@ import { fetchAppointments } from '../services/appointmentsService';
 import { Appointment } from '../models/Appointment';
 import { formatDate } from '../utils/dateUtils';
 import { UserRole } from '../models/UserRole';
-import { getNavigationPaths } from './navigationStore';
+import { getNavigationPaths, NavigationKey, NavigationItem } from './navigationStore';
 import { JSX } from 'react';
 
 interface DashboardState {
@@ -12,7 +12,7 @@ interface DashboardState {
   recentAppointments: Appointment[];
   fetchAppointments: (userId: string, role: UserRole) => Promise<void>;
   sidebarOpen: boolean;
-  navPaths: { name: string; href: string; icon?: JSX.Element }[];
+  navPaths: (NavigationItem & { icon?: JSX.Element })[];
   toggleSidebar: () => void;
   fetchNavigationPaths: (role: UserRole) => void;
 }
