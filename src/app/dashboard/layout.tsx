@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
   Bars3Icon,
@@ -13,20 +13,18 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-// import IosInstallPrompt from '../../utils/IosInstallPrompt';
 import { useInitializeAppointments } from '../../store/appointmentStore';
 import { useAuth } from '@/context/AuthContext';
 import { getNavigationPaths } from '@/store/navigationStore';
-// import { signOut } from 'firebase/auth';
-// import { getAuth } from 'firebase/auth';
 import DashboardSidebar from '../components/DashboardSidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const { t } = useTranslation();
+  const router = useRouter();
 
-  const { uid, role } = useAuth();
+  const { role, loading, isAuthenticated } = useAuth();
   useInitializeAppointments();
 
   // Service Worker Registration
@@ -36,11 +34,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, []);
 
-  if (!uid || !role) {
+  // Redirect if not authenticated after loading completes
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace(`/login?from=${encodeURIComponent(pathname || '/dashboard')}`);
+    }
+  }, [loading, isAuthenticated, router, pathname]);
+
+  // Show loading spinner while checking authentication
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="loading loading-spinner loading-lg"></div>
-        <span className="ml-2">{t('loadingDashboard')}</span>
+      </div>
+    );
+  }
+
+  // If not authenticated return null (router will have navigated)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // If authenticated but role still loading show spinner
+  if (!role) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="loading loading-spinner loading-lg" />
       </div>
     );
   }

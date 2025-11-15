@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from "../context/AuthContext";
+import ClientProviders from "./ClientProviders";
 import Script from "next/script";
 import Analytics from "./analytics/Analytics";
 import { Suspense } from "react";
@@ -38,12 +38,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </Script>
       </head>
       <body className="bg-base-100 min-h-screen">
-        <AuthProvider>
+        <ClientProviders>
           <Suspense fallback={null}>
             <Analytics />
           </Suspense>
           {children}
-        </AuthProvider>
+        </ClientProviders>
       </body>
     </html>
   );

@@ -59,8 +59,17 @@ export default function Dashboard() {
       }
     };
 
-    initializeDashboard();
-  }, [user, role, fetchAppointments, fetchProfileStatus, fetchAllAppointments]);
+    // Set a timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 5000); // 5 second timeout
+
+    if (!authLoading) {
+      initializeDashboard();
+    }
+
+    return () => clearTimeout(timeout);
+  }, [user, role, fetchAppointments, fetchProfileStatus, fetchAllAppointments, authLoading]);
 
   if (authLoading || loading) return <Loader />;
 

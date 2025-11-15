@@ -86,7 +86,9 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
               const auth = getAuth();
               try {
                 await signOut(auth);
+                // Clear both auth cookies
                 document.cookie = 'auth-token=; path=/; max-age=0';
+                document.cookie = 'userRole=; path=/; max-age=0';
                 window.location.href = '/login';
               } catch {
                 alert('Error signing out. Please try again.');
@@ -132,7 +134,9 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
               const auth = getAuth();
               try {
                 await signOut(auth);
+                // Clear both auth cookies
                 document.cookie = 'auth-token=; path=/; max-age=0';
+                document.cookie = 'userRole=; path=/; max-age=0';
                 window.location.href = '/login';
               } catch {
                 alert('Error signing out.');
