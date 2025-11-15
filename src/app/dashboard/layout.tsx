@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { ReactElement } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,7 +16,7 @@ import {
 import Image from 'next/image';
 import { useInitializeAppointments } from '../../store/appointmentStore';
 import { useAuth } from '@/context/AuthContext';
-import { getNavigationPaths } from '@/store/navigationStore';
+import { getNavigationPaths, NavigationKey } from '@/store/navigationStore';
 import DashboardSidebar from '../components/DashboardSidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -65,31 +66,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   const navPaths = getNavigationPaths(role);
+  // Icon lookup for compact mapping instead of switch
+  const iconMap: Record<NavigationKey, ReactElement> = {
+    [NavigationKey.Dashboard]: <HomeIcon className="h-6 w-6" />,
+    [NavigationKey.Appointments]: <ClipboardIcon className="h-6 w-6" />,
+    [NavigationKey.AppointmentHistory]: <ClipboardIcon className="h-6 w-6" />,
+    [NavigationKey.Profile]: <UserIcon className="h-6 w-6" />,
+    [NavigationKey.Calendar]: <CalendarIcon className="h-6 w-6" />,
+    [NavigationKey.NewAppointment]: <PlusIcon className="h-6 w-6" />,
+  };
 
-  const navItems = navPaths.map((item) => {
-    let icon;
-    switch (item.name) {
-      case 'Dashboard':
-        icon = <HomeIcon className="h-6 w-6" />;
-        break;
-      case 'Appointments':
-      case 'Appointment History':
-        icon = <ClipboardIcon className="h-6 w-6" />;
-        break;
-      case 'Profile':
-        icon = <UserIcon className="h-6 w-6" />;
-        break;
-      case 'Calendar':
-        icon = <CalendarIcon className="h-6 w-6" />;
-        break;
-      case 'New Appointment':
-        icon = <PlusIcon className="h-6 w-6" />;
-        break;
-      default:
-        icon = null;
-    }
-    return { ...item, icon };
-  });
+  const navItems = navPaths.map((item) => ({ ...item, icon: iconMap[item.key] }));
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
