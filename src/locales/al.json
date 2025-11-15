@@ -53,6 +53,7 @@
   "contact": "Kontakt",
   "dashboard": "Paneli",
   "signIn": "Hyr",
+  "goToDashboard": "Shko te paneli",
   "individuals": "Individë",
   "doctors": "Mjekë",
   "clinicians": "Klinicistë",
@@ -276,5 +277,6 @@
   "passwordsDoNotMatch": "Fjalëkalimet nuk përputhen.",
   "failedToRegisterUser": "Dështoi regjistrimi i përdoruesit",
   "registrationSuccessful": "Regjistrimi u krye me sukses!",
-  "redirectToLoginShortly": "Do të ridrejtoheni në faqen e kyçjes së shpejtë."
+  "redirectToLoginShortly": "Do të ridrejtoheni në faqen e kyçjes së shpejtë.",
+  "redirecting": "Duke ridrejtuar..."
 }

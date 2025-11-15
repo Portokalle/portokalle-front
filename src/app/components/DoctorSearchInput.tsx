@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { useDoctorSearchStore } from '../../store/doctorSearchStore';
 import { Doctor } from '@/models/Doctor';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,7 @@ const DoctorSearchInput = () => {
     fetchDoctors,
   } = useDoctorSearchStore();
   const searchRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -36,7 +36,7 @@ const DoctorSearchInput = () => {
   }, [searchTerm, fetchDoctors, toggleOverlay]);
 
   const handleDoctorClick = (doctor: Doctor) => {
-    router.push(`/dashboard/doctor/${doctor.id}`);
+    nav.toDoctorProfile(doctor.id);
     toggleOverlay(false);
   };
 
