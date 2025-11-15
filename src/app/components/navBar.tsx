@@ -18,6 +18,7 @@ export default function NavBar() {
   const { t, i18n } = useTranslation();
   const [lang, setLang] = useState(i18n.language);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [hasAuthCookie, setHasAuthCookie] = useState(false);
   const handleLanguageChange = (lng: string) => {
     document.cookie = `language=${lng}; path=/; max-age=31536000`;
     i18n.changeLanguage(lng);
@@ -53,6 +54,16 @@ export default function NavBar() {
       document.body.style.overflow = '';
     };
   }, [isMenuOpen]);
+
+  // Keep a cookie-based guard in sync with Firebase auth to avoid false "Go to Dashboard" on first load
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const cookieStr = document.cookie || '';
+      const hasToken = /(?:^|; )auth-token=/.test(cookieStr);
+      const hasRole = /(?:^|; )userRole=/.test(cookieStr);
+      setHasAuthCookie(hasToken && hasRole);
+    }
+  }, [isAuthenticated, loading]);
 
   return (
     <header
@@ -90,7 +101,7 @@ export default function NavBar() {
         {/* Right - Mobile Auth Buttons */}
         <div className="md:hidden z-[10000]">
           {!loading && (
-            isAuthenticated ? (
+            (isAuthenticated && hasAuthCookie) ? (
               <button
                 className="flex items-center space-x-1 text-[#ea580c] font-medium"
                 onClick={handleDashboardClick}
@@ -147,7 +158,7 @@ export default function NavBar() {
         {/* Desktop Auth Buttons */}
         <div className="hidden md:flex items-center space-x-4 ml-auto z-[9999]">
           {!loading && (
-            isAuthenticated ? (
+            (isAuthenticated && hasAuthCookie) ? (
               <button
                 className="bg-[#ea580c] text-white rounded-full px-6 py-2 font-semibold hover:bg-orange-700 transition-colors cursor-pointer"
                 onClick={handleDashboardClick}
@@ -235,7 +246,7 @@ export default function NavBar() {
           {/* Mobile Bottom Buttons */}
           <div className="p-4 border-t border-gray-100">
             {!loading && (
-              isAuthenticated ? (
+              (isAuthenticated && hasAuthCookie) ? (
                 <button
                   className="bg-[#ea580c] text-white rounded-full py-3 px-6 w-full font-semibold cursor-pointer"
                   onClick={handleDashboardClick}
