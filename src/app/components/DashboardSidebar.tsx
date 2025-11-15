@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import '../../i18n/i18n';
 import { getAuth, signOut } from 'firebase/auth';
+import { useSessionStore } from '@/store/sessionStore';
 import { Bars3Icon, XMarkIcon, PowerIcon, BellIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { db } from '../../config/firebaseconfig';
@@ -82,18 +83,7 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
         </ul>
         <div className={`p-4 flex ${sidebarOpen ? 'items-start' : 'items-center'} w-full`}>
           <button
-            onClick={async () => {
-              const auth = getAuth();
-              try {
-                await signOut(auth);
-                // Clear both auth cookies
-                document.cookie = 'auth-token=; path=/; max-age=0';
-                document.cookie = 'userRole=; path=/; max-age=0';
-                window.location.href = '/login';
-              } catch {
-                alert('Error signing out. Please try again.');
-              }
-            }}
+            onClick={() => useSessionStore.getState().logout('manual')}
             className={`flex items-center w-full py-2 px-3 transition-all duration-300 rounded-lg ${sidebarOpen ? 'text-red-500 hover:bg-red-100 hover:text-red-700' : 'flex-col text-red-500'}`}
           >
             <span className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-700">
@@ -130,18 +120,7 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
         </ul>
         <div className="p-4">
           <button
-            onClick={async () => {
-              const auth = getAuth();
-              try {
-                await signOut(auth);
-                // Clear both auth cookies
-                document.cookie = 'auth-token=; path=/; max-age=0';
-                document.cookie = 'userRole=; path=/; max-age=0';
-                window.location.href = '/login';
-              } catch {
-                alert('Error signing out.');
-              }
-            }}
+            onClick={() => useSessionStore.getState().logout('manual')}
             className="flex items-center py-2 px-3 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-lg"
           >
             <PowerIcon className="h-6 w-6 mr-2" />

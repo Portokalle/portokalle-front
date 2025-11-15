@@ -28,19 +28,16 @@ export const login = async (email: string, password: string) => {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const role = userDoc.exists() ? userDoc.data()?.role || 'patient' : 'patient';
 
-        // Get ID token for cookie-based auth
-        const token = await user.getIdToken();
-
-        // Set cookies with 7 days expiration
-        const expirationDays = 7;
-        const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDate() + expirationDays);
-        const expires = expirationDate.toUTCString();
-
-        // Set the auth token as a cookie
-        document.cookie = `auth-token=${token}; path=/; SameSite=Lax; expires=${expires}`;
-        // Set the userRole cookie for middleware
-        document.cookie = `userRole=${role}; path=/; SameSite=Lax; expires=${expires}`;
+        // Get ID token and send to server to create an HttpOnly session cookie
+        const idToken = await user.getIdToken();
+        const res = await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken, role }),
+        });
+        if (!res.ok) {
+            throw new Error('Failed to establish session');
+        }
 
         return { user, role };
     } catch {

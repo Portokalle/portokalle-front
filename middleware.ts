@@ -5,30 +5,47 @@ import type { NextRequest } from 'next/server';
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
   const role = req.cookies.get('userRole')?.value;
-  const hasAuthToken = req.cookies.get('auth-token')?.value;
+  const hasSession = req.cookies.get('session')?.value;
+  const lastActivityStr = req.cookies.get('lastActivity')?.value;
+  const lastActivity = lastActivityStr ? Number(lastActivityStr) : null;
+  const now = Date.now();
+  const idleMs = 30 * 60 * 1000; // 30 minutes
 
   // Redirect authenticated users away from auth pages
   // Require both auth token AND role cookie to reduce false positives from stale tokens
-  if (hasAuthToken && role && (url.pathname === '/login' || url.pathname === '/register')) {
+  if (hasSession && role && (url.pathname === '/login' || url.pathname === '/register')) {
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
 
   // Protect dashboard routes
   if (url.pathname.startsWith('/dashboard')) {
+    // Enforce idle timeout on server side if we have a timestamp
+    if (hasSession && lastActivity && now - lastActivity > idleMs) {
+      url.pathname = '/login';
+      url.searchParams.set('reason', 'idle-timeout');
+      const res = NextResponse.redirect(url);
+      // Clear session cookies
+      res.cookies.set('session', '', { path: '/', maxAge: 0, httpOnly: true });
+      res.cookies.set('userRole', '', { path: '/', maxAge: 0 });
+      res.cookies.set('lastActivity', '', { path: '/', maxAge: 0 });
+      res.cookies.set('loggedIn', '', { path: '/', maxAge: 0 });
+      return res;
+    }
+
     // Redirect immediately if no auth token
-    if (!hasAuthToken) {
+    if (!hasSession) {
       url.pathname = '/login';
       url.searchParams.set('from', req.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
 
     // Allow while role is loading client-side
-    if (hasAuthToken && !role) {
+    if (hasSession && !role) {
       return NextResponse.next();
     }
 
-    if (hasAuthToken && role) {
+    if (hasSession && role) {
       // Doctor-only routes
       if (url.pathname.startsWith('/dashboard/doctor') && role !== 'doctor') {
         url.pathname = '/dashboard';
@@ -46,6 +63,11 @@ export function middleware(req: NextRequest) {
   const lang = req.cookies.get('language')?.value || 'en';
   const res = NextResponse.next();
   res.headers.set('x-language', lang);
+  // Refresh lastActivity cookie while navigating SSR paths (sliding window)
+  if (hasSession) {
+    res.cookies.set('lastActivity', String(now), { path: '/', sameSite: 'lax', maxAge: 30 * 60 });
+    res.cookies.set('loggedIn', '1', { path: '/', sameSite: 'lax', maxAge: 30 * 60 });
+  }
   return res;
 }
 

@@ -59,9 +59,11 @@ export default function NavBar() {
   useEffect(() => {
     if (typeof document !== 'undefined') {
       const cookieStr = document.cookie || '';
-      const hasToken = /(?:^|; )auth-token=/.test(cookieStr);
+      // With HttpOnly session, we cannot check it client-side.
+      // Use the presence of a non-sensitive 'loggedIn' and 'userRole' to decide UI affordances.
+      const loggedIn = /(?:^|; )loggedIn=/.test(cookieStr);
       const hasRole = /(?:^|; )userRole=/.test(cookieStr);
-      setHasAuthCookie(hasToken && hasRole);
+      setHasAuthCookie(loggedIn && hasRole);
     }
   }, [isAuthenticated, loading]);
 

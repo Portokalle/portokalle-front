@@ -62,8 +62,8 @@ function LoginPageContent() {
       // Only proceed with login if reCAPTCHA passes
       console.log('Proceeding with login');
       await login(email, password);
-      // Verify if the 'auth-token' cookie is set
-      if (!document.cookie.includes('auth-token=')) {
+      // Verify if the 'loggedIn' cookie is set (HttpOnly session is not visible to JS)
+      if (!document.cookie.includes('loggedIn=')) {
   setErrorMsg(t('authTokenWarning'));
         setLoading(false);
         return;
