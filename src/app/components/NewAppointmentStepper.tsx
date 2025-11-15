@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DoctorSearch from '@/app/components/DoctorSearch';
 import useNewAppointment from '@/hooks/useNewAppointment';
-import { useRouter } from 'next/navigation';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import AppointmentConfirmation from './AppointmentConfirmation';
 
 export default function NewAppointmentStepper() {
@@ -23,7 +23,7 @@ export default function NewAppointmentStepper() {
     isSubmitting,
     availableTimes,
   } = useNewAppointment();
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
   const [step, setStep] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
@@ -189,7 +189,7 @@ export default function NewAppointmentStepper() {
       </div>
       {/* Confirmation Modal */}
       {showModal && (
-        <AppointmentConfirmation onClose={() => router.push('/dashboard/appointments')} />
+        <AppointmentConfirmation onClose={() => nav.toAppointments()} />
       )}
     </div>
   );

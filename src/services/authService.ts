@@ -31,10 +31,16 @@ export const login = async (email: string, password: string) => {
         // Get ID token for cookie-based auth
         const token = await user.getIdToken();
 
-        // Set the auth token as a session cookie
-        document.cookie = `auth-token=${token}; path=/; SameSite=Lax; expires=Session`;
+        // Set cookies with 7 days expiration
+        const expirationDays = 7;
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + expirationDays);
+        const expires = expirationDate.toUTCString();
+
+        // Set the auth token as a cookie
+        document.cookie = `auth-token=${token}; path=/; SameSite=Lax; expires=${expires}`;
         // Set the userRole cookie for middleware
-        document.cookie = `userRole=${role}; path=/; SameSite=Lax; expires=Session`;
+        document.cookie = `userRole=${role}; path=/; SameSite=Lax; expires=${expires}`;
 
         return { user, role };
     } catch {
