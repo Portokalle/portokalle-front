@@ -8,7 +8,8 @@ export function middleware(req: NextRequest) {
   const hasAuthToken = req.cookies.get('auth-token')?.value;
 
   // Redirect authenticated users away from auth pages
-  if (hasAuthToken && (url.pathname === '/login' || url.pathname === '/register')) {
+  // Require both auth token AND role cookie to reduce false positives from stale tokens
+  if (hasAuthToken && role && (url.pathname === '/login' || url.pathname === '/register')) {
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
   }
