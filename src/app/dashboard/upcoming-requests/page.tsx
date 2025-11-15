@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { fetchAppointments } from '../../../services/appointmentsService';
 import { useTranslation } from 'react-i18next';
 
@@ -15,7 +15,7 @@ interface Appointment {
 export default function UpcomingRequestsPage() {
   const [requests, setRequests] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export default function UpcomingRequestsPage() {
   }, [t]);
 
   const handleJoin = (requestId: string) => {
-    router.push(`/dashboard/chat-room/${requestId}`);
+    nav.toChatRoom(requestId);
   };
 
   if (loading) {

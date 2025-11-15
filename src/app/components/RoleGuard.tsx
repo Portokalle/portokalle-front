@@ -1,7 +1,7 @@
 'use client';
 import Loader from './Loader';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ interface RoleGuardProps {
 }
 
 export default function RoleGuard({ children, allowedRoles, fallbackPath = '/dashboard' }: RoleGuardProps) {
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
@@ -23,13 +23,13 @@ export default function RoleGuard({ children, allowedRoles, fallbackPath = '/das
         if (!userRole || !allowedRoles.includes(userRole)) {
           setRedirecting(true);
           // Use replace instead of push to avoid adding to history
-          router.replace(fallbackPath);
+          nav.replacePath(fallbackPath);
           return false;
         }
         return true;
       } catch {
         setRedirecting(true);
-        router.replace(fallbackPath);
+        nav.replacePath(fallbackPath);
         return false;
       }
     }
@@ -38,7 +38,7 @@ export default function RoleGuard({ children, allowedRoles, fallbackPath = '/das
     const authorized = checkUserRole();
     setIsAuthorized(authorized);
     setIsLoading(false);
-  }, [allowedRoles, fallbackPath, router]);
+  }, [allowedRoles, fallbackPath, nav]);
 
   // Show loader while checking or redirecting
   if (isLoading || redirecting) {

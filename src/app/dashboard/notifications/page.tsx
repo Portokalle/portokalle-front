@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { useEffect, useState } from "react";
 import { auth, db } from "../../../config/firebaseconfig";
 import { doc, getDoc, collection, updateDoc } from "firebase/firestore";
@@ -9,7 +9,7 @@ import Link from "next/link";
 import styles from "./notifications.module.css";
 
 function NotificationsPage() {
-  const router = useRouter();
+  const nav = useNavigationCoordinator();
   const { appointments, loading: isLoading, error, fetchAppointments } = useAppointmentStore();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [appointmentDetails, setAppointmentDetails] = useState<
@@ -22,7 +22,7 @@ function NotificationsPage() {
   useEffect(() => {
     const fetchUserRoleAndAppointments = async () => {
       if (!auth.currentUser) {
-        router.push("/login");
+        nav.toLogin();
         return;
       }
 
@@ -35,12 +35,12 @@ function NotificationsPage() {
         // Always fetch latest notifications when visiting the page
         await fetchAppointments(auth.currentUser.uid, role === "doctor");
       } else {
-        router.push("/login");
+        nav.toLogin();
       }
     };
 
     fetchUserRoleAndAppointments();
-  }, [router, fetchAppointments]);
+  }, [fetchAppointments]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const fetchAppointmentDetails = async () => {
@@ -153,8 +153,8 @@ function NotificationsPage() {
   };
 
   if (error) {
-
-    return router.push("/dashboard");
+    nav.toDashboard();
+    return null;
   }
 
   if (isLoading || !userRole) {
