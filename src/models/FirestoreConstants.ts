@@ -1,7 +1,5 @@
 export const FirestoreCollections = {
-  Doctor: "doctor",
   Users: "users",
-  Appointments: "appointments",
 };
 
 export const DoctorFields = {

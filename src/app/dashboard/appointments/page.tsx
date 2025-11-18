@@ -7,7 +7,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useVideoStore } from "../../../store/videoStore";
 import RoleGuard from '../../components/RoleGuard';
 import { AppointmentsTable } from '../../components/SharedAppointmentsTable';
-// import removed: getUserRole now handled by store
+import { getUserRole } from '../../../services/appointmentsService';
 import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '../../../config/userRoles';
 
 
@@ -22,7 +22,6 @@ function AppointmentsPage() {
     isAppointmentPast,
     fetchAppointments,
     setIsDoctor,
-    fetchUserRole,
   } = useAppointmentStore();
   const { setAuthStatus } = useVideoStore();
 
@@ -34,8 +33,8 @@ function AppointmentsPage() {
   // Set doctor/patient role
   useEffect(() => {
     if (!user?.uid) return;
-    fetchUserRole(user.uid);
-  }, [user, fetchUserRole]);
+    getUserRole(user.uid).then(role => setIsDoctor(role === USER_ROLE_DOCTOR));
+  }, [user, setIsDoctor]);
 
   // Fetch appointments on user/role change
   useEffect(() => {
