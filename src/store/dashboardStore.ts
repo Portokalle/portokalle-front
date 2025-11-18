@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { fetchAppointments } from '../services/appointmentsService';
+import { fetchAppointments } from '../domain/appointmentService';
 import { Appointment } from '../models/Appointment';
 import { formatDate } from '../utils/dateUtils';
 import { UserRole } from '../models/UserRole';
@@ -24,34 +24,34 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   fetchAppointments: async (userId, role) => {
     try {
       const isDoctor = role === UserRole.Doctor;
-
-      const mappedAppointments = await fetchAppointments(userId, isDoctor);
+      const appointments = await fetchAppointments(userId, isDoctor);
 
       // Filter and sort upcoming appointments
-      const upcomingAppointments = mappedAppointments
+      const upcomingAppointments = appointments
         .filter((appointment) => {
           const isUpcoming = appointment.preferredDate && new Date(appointment.preferredDate) > new Date();
-          const isAccepted = role === UserRole.Doctor ? appointment.status === 'accepted' : true;
+          const isAccepted = isDoctor ? appointment.status === 'accepted' : true;
           return isUpcoming && isAccepted;
         })
         .sort((a, b) => new Date(a.preferredDate!).getTime() - new Date(b.preferredDate!).getTime());
 
       // Sort appointments by preferredDate in descending order for recent appointments
-      const sortedAppointments = mappedAppointments
+      const sortedAppointments = appointments
         .filter((appointment) => appointment.preferredDate)
         .sort((a, b) => new Date(b.preferredDate!).getTime() - new Date(a.preferredDate!).getTime())
         .slice(0, 5);
 
       set((state) => ({
         ...state,
-        totalAppointments: mappedAppointments.length,
+        totalAppointments: appointments.length,
         nextAppointment: upcomingAppointments.length
           ? `${formatDate(upcomingAppointments[0].preferredDate!)} at ${upcomingAppointments[0].preferredTime || 'N/A'}`
           : null,
         recentAppointments: sortedAppointments,
       }));
-  } catch {
-  }
+    } catch {
+      set((state) => ({ ...state, totalAppointments: 0, nextAppointment: null, recentAppointments: [] }));
+    }
   },
   sidebarOpen: false,
   navPaths: [],
