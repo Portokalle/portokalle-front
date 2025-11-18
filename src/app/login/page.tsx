@@ -6,7 +6,7 @@ import '../../i18n/i18n';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { login } from '../../domain/authService';
+import { login } from '../../services/authService';
 import { testFirebaseConnection } from '../../services/firebaseTest';
 import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
@@ -35,14 +35,17 @@ function LoginPageContent() {
     setLoading(true);
     setErrorMsg('');
     try {
+      console.log('Login: start');
       if (!navigator.onLine) {
   throw new Error(t('offlineError'));
       }
       if (!executeRecaptcha) {
+        console.log('reCAPTCHA not ready');
   throw new Error(t('recaptchaNotReady'));
       }
       // Get reCAPTCHA token
       const token = await executeRecaptcha('login');
+      console.log('reCAPTCHA token:', token);
       // Verify token with backend
       const recaptchaRes = await fetch('/api/verify-recaptcha', {
         method: 'POST',
@@ -50,12 +53,14 @@ function LoginPageContent() {
         body: JSON.stringify({ token }),
       });
       const recaptchaData = await recaptchaRes.json();
+      console.log('reCAPTCHA response:', recaptchaData);
       if (!recaptchaData.success) {
   setErrorMsg(t('recaptchaFailed'));
         setLoading(false);
         return;
       }
       // Only proceed with login if reCAPTCHA passes
+      console.log('Proceeding with login');
       await login(email, password);
       // Verify if the 'loggedIn' cookie is set (HttpOnly session is not visible to JS)
       if (!document.cookie.includes('loggedIn=')) {
@@ -69,6 +74,7 @@ function LoginPageContent() {
       console.error('Login error:', err);
     } finally {
       setLoading(false);
+      console.log('Login: end');
     }
   };
 
