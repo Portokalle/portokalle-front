@@ -46,8 +46,8 @@ export function middleware(req: NextRequest) {
     }
 
     if (hasSession && role) {
-      // Allow both doctors and patients to view doctor profiles
-      if (url.pathname.startsWith('/dashboard/doctor') && !(role === 'doctor' || role === 'patient')) {
+      // Doctor-only routes
+      if (url.pathname.startsWith('/dashboard/doctor') && role !== 'doctor') {
         url.pathname = '/dashboard';
         return NextResponse.redirect(url);
       }

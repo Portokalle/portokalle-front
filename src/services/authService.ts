@@ -4,14 +4,6 @@ import { auth, db } from '../config/firebaseconfig';
 
 import { sendPasswordResetEmail } from "firebase/auth";
 
-// Send password reset email
-export async function resetUserPassword(email: string) {
-    try {
-        await sendPasswordResetEmail(auth, email);
-    } catch {
-        throw new Error('Failed to send password reset email');
-    }
-}
 // Centralized authentication service
 
 // Check if user is authenticated
@@ -67,4 +59,10 @@ export async function fetchUserDetails(userId: string) {
     } catch {
         return null;
     }
+}
+
+// Centralized password reset function
+export async function resetUserPassword(email: string): Promise<void> {
+    if (!email) throw new Error("Email is required to reset password");
+    await sendPasswordResetEmail(auth, email);
 }
