@@ -1,10 +1,11 @@
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
+import { UserRole } from '../../../src/models/UserRole';
+import { setSecurityHeaders } from '../../../src/config/httpHeaders';
 
 const THIRTY_MIN = 30 * 60; // seconds
+const ENV_PRODUCTION = 'production';
 
-// Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
@@ -34,13 +35,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const uid = decoded.uid;
     // Fetch user role from Firestore
     const userDoc = await admin.firestore().collection('users').doc(uid).get();
-    let role = 'patient';
+    let role = UserRole.Patient;
     if (userDoc.exists) {
       const data = userDoc.data();
-      role = (data && data.role) ? data.role : 'patient';
+      role = (data && Object.values(UserRole).includes(data.role)) ? data.role : UserRole.Patient;
     }
 
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd = process.env.NODE_ENV === ENV_PRODUCTION;
+    setSecurityHeaders(res, isProd);
 
     // Set cookies using server-fetched role
     res.setHeader('Set-Cookie', [
