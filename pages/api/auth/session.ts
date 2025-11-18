@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let decoded;
     try {
       decoded = await admin.auth().verifyIdToken(idToken);
-    } catch (err) {
+    } catch {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
