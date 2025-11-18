@@ -1,9 +1,16 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Simple server-side session cookie setter.
-// TODO: Verify idToken using Firebase Admin SDK for stronger security.
+import type { NextApiRequest, NextApiResponse } from 'next';
+import admin from 'firebase-admin';
 
 const THIRTY_MIN = 30 * 60; // seconds
+
+// Initialize Firebase Admin if not already initialized
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+  });
+}
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -11,20 +18,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { idToken, role } = req.body || {};
-    if (!idToken || !role) {
-      return res.status(400).json({ error: 'Missing idToken or role' });
+    const { idToken } = req.body || {};
+    if (!idToken) {
+      return res.status(400).json({ error: 'Missing idToken' });
     }
 
-    // Minimal sanity check to avoid empty tokens; real apps: verify with Firebase Admin
-    if (typeof idToken !== 'string' || idToken.length < 100) {
-      return res.status(400).json({ error: 'Invalid token' });
+    // Verify the ID token using Firebase Admin
+    let decoded;
+    try {
+      decoded = await admin.auth().verifyIdToken(idToken);
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const uid = decoded.uid;
+    // Fetch user role from Firestore
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    let role = 'patient';
+    if (userDoc.exists) {
+      const data = userDoc.data();
+      role = (data && data.role) ? data.role : 'patient';
     }
 
     const isProd = process.env.NODE_ENV === 'production';
 
-    // Opaque HttpOnly session marker cookie. Consider signing or using a backend session store.
-    // For now we just set a static marker value.
+    // Set cookies using server-fetched role
     res.setHeader('Set-Cookie', [
       // HttpOnly session cookie (not readable by JS)
       `session=1; Path=/; SameSite=Lax; Max-Age=${THIRTY_MIN}; HttpOnly${isProd ? '; Secure' : ''}`,
@@ -37,6 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ ok: true });
   } catch (e: unknown) {
+    // Log error for debugging
+    console.error('Session API error:', e);
     const message = e instanceof Error ? e.message : 'Internal error';
     return res.status(500).json({ error: message });
   }

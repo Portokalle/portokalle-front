@@ -33,7 +33,7 @@ export const login = async (email: string, password: string) => {
         const res = await fetch('/api/auth/session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idToken, role }),
+            body: JSON.stringify({ idToken }),
         });
         if (!res.ok) {
             throw new Error('Failed to establish session');
