@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getDocs, query, where, collection, addDoc } from 'firebase/firestore'; // Removed unused `doc` and `setDoc`
-import { isAuthenticated, fetchUserDetails } from '../services/authService';
+import { isAuthenticated, fetchUserDetails } from '../domain/authService';
 import { addMinutes, format, isSameDay, isBefore, startOfDay } from 'date-fns';
 import { useNewAppointmentStore } from '@/store/newAppointmentStore';
 import { Appointment } from '@/models/Appointment';
