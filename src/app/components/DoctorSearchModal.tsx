@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { fetchDoctors } from '../../services/doctorService';
 import { Doctor } from '../../models/Doctor';
 import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
+import { useRouter } from 'next/navigation';
+import { doctorProfilePath } from '@/navigation/NavigationCoordinator';
 import { SearchType } from '../../models/FirestoreConstants';
 
 interface DoctorSearchModalProps {
@@ -19,7 +21,7 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const nav = useNavigationCoordinator();
+  const router = useRouter();
 
   const fetchDoctorsList = useCallback(async (term: string) => {
     setLoading(true);
@@ -53,8 +55,9 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
   }, [searchTerm, fetchDoctorsList]);
 
   const handleDoctorClick = (doctor: Doctor) => {
-    nav.toDoctorProfile(doctor.id);
-    onClose(); // Close modal after navigation
+  console.log('DoctorSearchModal: Navigating to doctor profile', doctor.id);
+  router.push(doctorProfilePath(doctor.id));
+  onClose(); // Close modal after navigation
   };
 
   if (!isOpen || !position) return null;

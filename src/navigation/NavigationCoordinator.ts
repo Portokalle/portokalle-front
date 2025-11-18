@@ -48,7 +48,7 @@ const routePaths: Record<
 };
 
 // Dynamic path helpers kept together for discoverability.
-function doctorProfilePath(doctorId: string) {
+export function doctorProfilePath(doctorId: string) {
   return `/dashboard/doctor/${doctorId}`;
 }
 
