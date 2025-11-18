@@ -1,5 +1,5 @@
 'use client';
-
+export const dynamic = 'force-dynamic';
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,8 @@ import { useDashboardStore } from '../../store/dashboardStore';
 import Link from 'next/link';
 import { isProfileIncomplete } from '../../store/generalStore';
 import DashboardDoctorSearchBar from '../components/DashboardDoctorSearchBar';
+import { useRouter } from 'next/navigation';
+import { doctorProfilePath } from '@/navigation/NavigationCoordinator';
 import { UserRole } from '../../models/UserRole';
 import DashboardNotificationsBell from '../components/DashboardNotificationsBell';
 import Loader from '../components/Loader';
@@ -18,6 +20,7 @@ import { useDashboardActions } from '../../hooks/useDashboardActions';
 import ProfileWarning from '../components/ProfileWarning';
 
 export default function Dashboard() {
+  const router = useRouter();
   const { t } = useTranslation();
   const [showRedirecting, setShowRedirecting] = useState(false);
   const { user, role, loading: authLoading } = useAuth();

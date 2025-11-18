@@ -1,12 +1,9 @@
 import { create } from "zustand";
-import { fetchAppointments } from "../services/appointmentsService";
+import { fetchAppointments, setAppointmentPaid, handlePayNow, checkIfPastAppointment, verifyStripePayment, getUserRole } from "../domain/appointmentService";
 import { Appointment } from "../models/Appointment";
-import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
-import app from "../config/firebaseconfig";
 import { getAppointmentAction } from "./appointmentActionButton";
 import { APPOINTMENT_DURATION_MINUTES } from '../config/appointmentConfig';
-
-const db = getFirestore(app);
+import { USER_ROLE_DOCTOR } from "@/config/userRoles";
 
 interface AppointmentState {
   appointments: Appointment[];
@@ -15,14 +12,15 @@ interface AppointmentState {
   error: string | null;
   setAppointments: (appointments: Appointment[]) => void;
   setIsDoctor: (isDoctor: boolean | null) => void;
+  fetchUserRole: (userId: string) => Promise<void>;
   fetchAppointments: (userId: string, isDoctor: boolean) => Promise<void>;
   setAppointmentPaid: (appointmentId: string) => Promise<void>;
   handlePayNow: (appointmentId: string, amount: number) => Promise<void>;
-  isPastAppointment: (date: string, time: string) => boolean;
   checkIfPastAppointment: (appointmentId: string) => Promise<boolean>;
+  verifyStripePayment: (appointmentId: string) => Promise<void>;
+  isPastAppointment: (date: string, time: string) => boolean;
   isAppointmentPast: (appointment: Appointment) => boolean;
   getAppointmentAction: (appointment: Appointment) => { label: string; disabled: boolean; variant: string };
-  verifyStripePayment: (appointmentId: string) => Promise<void>;
 }
 
 export const useAppointmentStore = create<AppointmentState>((set, get) => ({
@@ -32,6 +30,15 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   error: null,
   setAppointments: (appointments) => set({ appointments }),
   setIsDoctor: (isDoctor) => set({ isDoctor }),
+  fetchUserRole: async (userId: string) => {
+    set({ loading: true, error: null });
+    try {
+      const role = await getUserRole(userId);
+      set({ isDoctor: role === USER_ROLE_DOCTOR, loading: false });
+    } catch {
+      set({ error: "Failed to fetch user role", loading: false });
+    }
+  },
   fetchAppointments: async (userId: string, isDoctor: boolean) => {
     set({ loading: true, error: null });
     try {
@@ -47,53 +54,14 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
       set({ error: "Failed to fetch appointments", loading: false });
     }
   },
-  setAppointmentPaid: async (appointmentId) => {
-    try {
-      const appointmentRef = doc(db, "appointments", appointmentId);
-      await updateDoc(appointmentRef, { isPaid: true });
-  } catch {
-  }
-  },
-  handlePayNow: async (appointmentId, amount) => {
-    try {
-      const response = await fetch("/api/stripe/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appointmentId, amount }),
-      });
-      const { url } = await response.json();
-      if (response.ok && url) {
-        window.location.href = url;
-      } else {
-        throw new Error("Failed to create payment intent");
-      }
-    } catch {
-      alert('Payment error');
-    }
-  },
+  setAppointmentPaid: async (appointmentId) => setAppointmentPaid(appointmentId),
+  handlePayNow: async (appointmentId, amount) => handlePayNow(appointmentId, amount),
+  checkIfPastAppointment: async (appointmentId) => checkIfPastAppointment(appointmentId),
+  verifyStripePayment: async (appointmentId) => verifyStripePayment(appointmentId, get().setAppointmentPaid),
   isPastAppointment: (date, time) => {
     const appointmentDateTime = new Date(`${date}T${time}`);
-    const appointmentEndTime = new Date(appointmentDateTime.getTime() + 30 * 60000); // plus 30 min
+    const appointmentEndTime = new Date(appointmentDateTime.getTime() + 30 * 60000);
     return appointmentEndTime < new Date();
-  },
-  checkIfPastAppointment: async (appointmentId) => {
-    try {
-      const appointmentRef = doc(db, "appointments", appointmentId);
-      const appointmentDoc = await getDoc(appointmentRef);
-
-      if (!appointmentDoc.exists()) {
-
-        return false;
-      }
-
-      const appointmentData = appointmentDoc.data();
-      const appointmentDateTime = new Date(`${appointmentData.preferredDate}T${appointmentData.preferredTime}`);
-      const appointmentEndTime = new Date(appointmentDateTime.getTime() + 30 * 60000); // plus 30 min
-
-      return appointmentEndTime < new Date();
-    } catch {
-      return false;
-    }
   },
   isAppointmentPast: (appointment) => {
     const appointmentDateTime = new Date(`${appointment.preferredDate}T${appointment.preferredTime}`);
@@ -101,21 +69,6 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     return appointmentEndTime < new Date();
   },
   getAppointmentAction: (appointment) => getAppointmentAction(appointment, get().isAppointmentPast),
-  verifyStripePayment: async (appointmentId: string) => {
-    try {
-      // Call your backend to verify payment status after Stripe redirect
-      const response = await fetch(`/api/stripe/verify-payment?appointmentId=${appointmentId}`);
-      if (!response.ok) {
-        throw new Error("Failed to verify payment");
-      }
-      const { isPaid } = await response.json();
-      if (isPaid) {
-        // Update both store and Firestore using the store method
-        await get().setAppointmentPaid(appointmentId);
-      }
-  } catch {
-  }
-  },
 }));
 
 export const useInitializeAppointments = () => {
