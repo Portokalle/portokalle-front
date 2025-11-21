@@ -9,7 +9,7 @@ import { isProfileIncomplete } from '../../store/generalStore';
 import DashboardDoctorSearchBar from '../components/DashboardDoctorSearchBar';
 import { useRouter } from 'next/navigation';
 import { doctorProfilePath } from '@/navigation/NavigationCoordinator';
-import { UserRole } from '../../models/UserRole';
+import { UserRole } from '@/domain/entities/UserRole';
 import DashboardNotificationsBell from '../components/DashboardNotificationsBell';
 import Loader from '../components/Loader';
 import { useAppointmentStore } from '../../store/appointmentStore';

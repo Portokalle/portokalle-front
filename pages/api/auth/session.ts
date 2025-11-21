@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
-import { UserRole } from '../../../src/models/UserRole';
+import { UserRole } from '@/domain/entities/UserRole';
 import { setSecurityHeaders } from '../../../src/config/httpHeaders';
 
 const THIRTY_MIN = 30 * 60; // seconds

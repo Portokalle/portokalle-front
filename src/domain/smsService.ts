@@ -1,6 +1,6 @@
 import axios from 'axios';
 import qs from 'qs';
-import { getUserPhoneNumber } from './userService';
+import { getUserPhoneNumber } from '@/domain/userService';
 
 const VONAGE_API_KEY = process.env.NEXT_PUBLIC_VONAGE_API_KEY;
 const VONAGE_API_SECRET = process.env.NEXT_PUBLIC_VONAGE_API_SECRET;
@@ -12,7 +12,6 @@ export async function sendSMSFromFirestore(userId: string, text: string): Promis
     if (!VONAGE_API_KEY || !VONAGE_API_SECRET) {
       throw new Error('Vonage API credentials are not configured');
     }
-    
     const to = await getUserPhoneNumber(userId);
     if (!to) throw new Error('Phone number not found for user: ' + userId);
     const data = {
@@ -36,11 +35,11 @@ export async function sendDoctorAppointmentRequestSMS(doctorId: string, patientN
 }
 
 export async function sendPatientAppointmentAcceptedSMS(patientId: string, doctorName: string) {
-  const text = `Your appointment with Dr. ${doctorName} has been accepted. Please log in to portokalle.al to pay and confirm.`;
+  const text = `Your appointment with Dr. ${doctorName} has been accepted. Please check your dashboard for details.`;
   await sendSMSFromFirestore(patientId, text);
 }
 
 export async function sendPatientAppointmentReminderSMS(patientId: string, doctorName: string, time: string) {
-  const text = `Reminder: You have an appointment with Dr. ${doctorName} on portokalle.al in 5 min at ${time}.`;
+  const text = `Reminder: Your appointment with Dr. ${doctorName} is scheduled for ${time}.`;
   await sendSMSFromFirestore(patientId, text);
 }

@@ -1,6 +1,6 @@
-import { getUserPhoneNumber } from './userService';
-import { sendPatientAppointmentReminderSMS } from './smsService';
-import { Appointment } from '../models/Appointment';
+import { getUserPhoneNumber } from '@/domain/userService';
+import { sendPatientAppointmentReminderSMS } from '@/domain/smsService';
+import { Appointment } from '@/domain/entities/Appointment';
 
 /**
  * Schedules a reminder SMS to be sent 5 minutes before the appointment.
@@ -15,6 +15,3 @@ export async function sendAppointmentReminder(appointment: Appointment) {
   const time = `${appointment.preferredDate} ${appointment.preferredTime}`;
   await sendPatientAppointmentReminderSMS(patientPhone, appointment.doctorName, time);
 }
-
-// Example usage (to be called by a scheduler):
-// await sendAppointmentReminder(appointment);

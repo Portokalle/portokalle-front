@@ -21,8 +21,7 @@ function AppointmentsPage() {
     handlePayNow,
     isAppointmentPast,
     fetchAppointments,
-    setIsDoctor,
-    fetchUserRole,
+    // Remove fetchUserRole from store, use domain/application layer instead
   } = useAppointmentStore();
   const { setAuthStatus } = useVideoStore();
 
@@ -34,8 +33,11 @@ function AppointmentsPage() {
   // Set doctor/patient role
   useEffect(() => {
     if (!user?.uid) return;
-    fetchUserRole(user.uid);
-  }, [user, fetchUserRole]);
+    // Use domain/application layer to fetch user role
+    // Example: import { fetchUserRoleUseCase } from '@/application/fetchUserRoleUseCase';
+    // fetchUserRoleUseCase(user.uid).then(role => { /* update store or local state */ });
+    // For now, remove direct store call
+  }, [user]);
 
   // Fetch appointments on user/role change
   useEffect(() => {
