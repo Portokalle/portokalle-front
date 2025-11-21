@@ -21,7 +21,6 @@ function AppointmentsPage() {
     handlePayNow,
     isAppointmentPast,
     fetchAppointments,
-    setIsDoctor,
     fetchUserRole,
   } = useAppointmentStore();
   const { setAuthStatus } = useVideoStore();

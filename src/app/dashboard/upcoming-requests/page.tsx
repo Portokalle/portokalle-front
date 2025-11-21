@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
-import { fetchAppointments } from '../../../services/appointmentsService';
+import { fetchAppointments } from '@/domain/appointmentService';
 import { useTranslation } from 'react-i18next';
 
 interface Appointment {
