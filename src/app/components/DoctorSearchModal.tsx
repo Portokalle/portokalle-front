@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchDoctors } from '../../services/doctorService';
 import { Doctor } from '../../models/Doctor';
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
 import { useRouter } from 'next/navigation';
 import { doctorProfilePath } from '@/navigation/NavigationCoordinator';
 import { SearchType } from '../../models/FirestoreConstants';
