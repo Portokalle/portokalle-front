@@ -48,7 +48,6 @@ export const useDoctorSearchStore = create<DoctorSearchState>((set, get) => {
         });
       }
 
-      console.log('Filtered doctors for UI:', uniqueDoctors);
       set({ filteredDoctors: uniqueDoctors });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Failed to fetch doctors.' });

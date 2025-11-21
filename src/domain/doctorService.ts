@@ -34,7 +34,6 @@ export async function fetchDoctors(searchTerm: string, searchType: SearchType): 
       where(DoctorFields.Role, "==", DoctorFields.RoleDoctor)
     );
     const snapshot = await getDocs(doctorQuery);
-    console.log("Doctors found:", snapshot.docs.length, snapshot.docs.map(doc => doc.data()));
     if (snapshot.empty) {
       return [];
     }
