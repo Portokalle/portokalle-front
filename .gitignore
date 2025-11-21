@@ -39,3 +39,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+portokalle-b76b9-firebase-adminsdk-fbsvc-801b17ac0b.json
