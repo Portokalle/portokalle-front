@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import CenteredLoader from './CenteredLoader';
-import { Appointment } from '../../models/Appointment';
-import { getAppointmentAction } from '../../store/appointmentActionButton';
+import { Appointment } from '@/domain/entities/Appointment';
+import { UserRole } from '@/domain/entities/UserRole';
+import { getAppointmentAction } from '../../domain/appointmentActionButton';
 import { DEFAULT_APPOINTMENT_PAYMENT_AMOUNT } from '../../config/paymentConfig';
 
 interface AppointmentsTableProps {
@@ -60,7 +61,14 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                 })
                 .slice(0, maxRows)
                 .map((appointment) => {
-                  const action = getAppointmentAction(appointment, isAppointmentPast, role);
+                  // Helper to map string to UserRole enum
+                  const toUserRole = (r: string): UserRole | undefined => {
+                    return Object.values(UserRole).includes(r as UserRole)
+                      ? (r as UserRole)
+                      : undefined;
+                  };
+                  const userRoleEnum = toUserRole(role);
+                  const action = getAppointmentAction(appointment, isAppointmentPast, userRoleEnum);
                   return (
                     <tr key={appointment.id}>
                       <td>{appointment.preferredDate}</td>
@@ -108,7 +116,12 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                               {t('joinNow')}
                             </button>
                           )}
-                          {action.disabled && (
+                          {action.disabled && role === 'doctor' && (
+                            <span className="text-orange-500 font-semibold">
+                              {t('waitingForPayment')}
+                            </span>
+                          )}
+                          {action.disabled && role !== 'doctor' && (
                             <button
                               className="bg-gray-400 text-white font-bold py-2 px-4 rounded-full opacity-50 cursor-not-allowed"
                               disabled
@@ -143,7 +156,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
             })
             .slice(0, maxRows)
             .map((appointment) => {
-              const action = getAppointmentAction(appointment, isAppointmentPast, role);
+              const action = getAppointmentAction(appointment, isAppointmentPast, role as any);
               return (
                 <div key={appointment.id} className="rounded-xl shadow bg-white p-4 flex flex-col gap-2">
                   <div className="flex justify-between items-center">
@@ -191,7 +204,12 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
                             {t('joinNow')}
                           </button>
                         )}
-                        {action.disabled && (
+                        {action.disabled && role === 'doctor' && (
+                          <span className="text-orange-500 font-semibold text-xs ml-auto">
+                            {t('waitingForPayment')}
+                          </span>
+                        )}
+                        {action.disabled && role !== 'doctor' && (
                           <button
                             className="ml-auto bg-gray-400 text-white font-bold py-1 px-3 rounded-full opacity-50 cursor-not-allowed text-xs"
                             disabled

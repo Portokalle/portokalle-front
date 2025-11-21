@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
-import { fetchAppointments } from '@/domain/appointmentService';
+import { useDI } from '@/context/DIContext';
+import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 interface Appointment {
@@ -17,13 +18,22 @@ export default function UpcomingRequestsPage() {
   const [loading, setLoading] = useState(true);
   const nav = useNavigationCoordinator();
   const { t } = useTranslation();
+  const { fetchAppointmentsUseCase } = useDI();
+  const { user, role, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchRequests = async () => {
       setLoading(true);
       try {
-        const fetchedRequests = await fetchAppointments('pending', false);
-        setRequests(fetchedRequests);
+        if (isAuthenticated && user && role) {
+          const isDoctor = role === 'doctor';
+          const allAppointments = await fetchAppointmentsUseCase.execute(user.uid, isDoctor);
+          // Filter for pending requests (assuming status field exists)
+          const pendingRequests = allAppointments.filter((appt: any) => appt.status === 'pending');
+          setRequests(pendingRequests);
+        } else {
+          setRequests([]);
+        }
       } catch (error) {
         if (error instanceof Error) {
           alert(error.message);
@@ -35,7 +45,7 @@ export default function UpcomingRequestsPage() {
       }
     };
     fetchRequests();
-  }, [t]);
+  }, [t, isAuthenticated, user, role, fetchAppointmentsUseCase]);
 
   const handleJoin = (requestId: string) => {
     nav.toChatRoom(requestId);

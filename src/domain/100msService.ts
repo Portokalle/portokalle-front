@@ -1,4 +1,3 @@
-// src/services/100msService.ts
 import type { GenerateRoomCodeAndTokenResponse } from '../models/100msTypes';
 
 export async function generateRoomCodeAndToken({ user_id, room_id, role, template_id }: {

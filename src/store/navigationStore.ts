@@ -1,4 +1,4 @@
-import { UserRole } from '../models/UserRole';
+import { UserRole } from '@/domain/entities/UserRole';
 
 // Stable enum keys so we don't rely on display strings for logic
 export enum NavigationKey {

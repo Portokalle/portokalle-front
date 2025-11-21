@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchDoctors } from '../../services/doctorService';
-import { Doctor } from '../../models/Doctor';
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
+import { fetchDoctors } from "@/domain/doctorService";
+import { Doctor } from '@/domain/entities/Doctor';
 import { useRouter } from 'next/navigation';
 import { doctorProfilePath } from '@/navigation/NavigationCoordinator';
-import { SearchType } from '../../models/FirestoreConstants';
+import { SearchType } from '@/models/FirestoreConstants';
 
 interface DoctorSearchModalProps {
   isOpen: boolean;

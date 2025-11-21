@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import RoleGuard from '../../../components/RoleGuard';
-import { UserRole } from '../../../../models/UserRole';
+import { UserRole } from '@/domain/entities/UserRole';
 import Calendar from '../Calendar';
 import Loader from '../../../components/Loader';
 import { useAuth } from '../../../../context/AuthContext';
@@ -16,10 +16,16 @@ export default function DoctorCalendarPage() {
   const { appointments, fetchAppointments, loading } = useAppointmentStore();
   const [events, setEvents] = useState<RBCEvent[]>([]);
 
+  // Dependency injection for Clean Architecture
+  const { FetchAppointmentsUseCase } = require('@/application/fetchAppointmentsUseCase');
+  const { FirebaseAppointmentRepository } = require('@/infrastructure/repositories/FirebaseAppointmentRepository');
+  const appointmentRepo = new FirebaseAppointmentRepository();
+  const fetchAppointmentsUseCase = new FetchAppointmentsUseCase(appointmentRepo);
+
   useEffect(() => {
     if (!user?.uid) return;
-    fetchAppointments(user.uid, true);
-  }, [user, fetchAppointments]);
+    fetchAppointments(user.uid, true, (userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor));
+  }, [user, fetchAppointments, fetchAppointmentsUseCase]);
 
   useEffect(() => {
     // Map appointments to calendar events whenever appointments change
