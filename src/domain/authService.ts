@@ -48,7 +48,8 @@ export const login = async (email: string, password: string) => {
         }
 
         return { user, role };
-    } catch {
+    } catch (error) {
+        console.error('Login error:', error); // Log the actual error object
         throw new Error('Failed to log in');
     }
 };
