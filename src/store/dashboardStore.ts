@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { fetchAppointments } from '../domain/appointmentService';
-import { Appointment } from '../models/Appointment';
+import { isDoctor } from '../domain/rules/userRules';
+import { Appointment } from '@/domain/entities/Appointment';
 import { formatDate } from '../utils/dateUtils';
-import { UserRole } from '../models/UserRole';
+import { UserRole } from '@/domain/entities/UserRole';
 import { getNavigationPaths, NavigationItem } from './navigationStore';
 import { JSX } from 'react';
 
@@ -10,7 +10,7 @@ interface DashboardState {
   totalAppointments: number;
   nextAppointment: string | null;
   recentAppointments: Appointment[];
-  fetchAppointments: (userId: string, role: UserRole) => Promise<void>;
+  fetchAppointments: (userId: string, role: UserRole, fetchAppointmentsUseCase: (userId: string, isDoctor: boolean) => Promise<Appointment[]>) => Promise<void>;
   sidebarOpen: boolean;
   navPaths: (NavigationItem & { icon?: JSX.Element })[];
   toggleSidebar: () => void;
@@ -21,16 +21,15 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   totalAppointments: 0,
   nextAppointment: null,
   recentAppointments: [],
-  fetchAppointments: async (userId, role) => {
+  fetchAppointments: async (userId, role, fetchAppointmentsUseCase) => {
     try {
-      const isDoctor = role === UserRole.Doctor;
-      const appointments = await fetchAppointments(userId, isDoctor);
+      const appointments = await fetchAppointmentsUseCase(userId, isDoctor(role));
 
       // Filter and sort upcoming appointments
       const upcomingAppointments = appointments
         .filter((appointment) => {
           const isUpcoming = appointment.preferredDate && new Date(appointment.preferredDate) > new Date();
-          const isAccepted = isDoctor ? appointment.status === 'accepted' : true;
+          const isAccepted = isDoctor(role) ? appointment.status === 'accepted' : true;
           return isUpcoming && isAccepted;
         })
         .sort((a, b) => new Date(a.preferredDate!).getTime() - new Date(b.preferredDate!).getTime());

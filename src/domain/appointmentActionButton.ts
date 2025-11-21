@@ -1,4 +1,4 @@
-import { Appointment } from "../models/Appointment";
+import { Appointment } from "@/domain/entities/Appointment";
 
 enum AppointmentActionVariant {
 	Finished = "finished",

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { getDocs, query, where, collection, addDoc } from 'firebase/firestore'; // Removed unused `doc` and `setDoc`
 import { isAuthenticated, fetchUserDetails } from '../domain/authService';
-import { addMinutes, format, isSameDay, isBefore, startOfDay } from 'date-fns';
 import { useNewAppointmentStore } from '@/store/newAppointmentStore';
-import { Appointment } from '@/models/Appointment';
-import { useAuth } from '../context/AuthContext'; // Use the hook instead of direct context
-import { db } from '@/config/firebaseconfig';
+import { Appointment } from '@/domain/entities/Appointment';
+import { AppointmentStatus } from '@/domain/entities/AppointmentStatus';
+import { useAuth } from '../context/AuthContext';
+import { CreateAppointmentUseCase } from '@/application/createAppointmentUseCase';
+import { FirebaseAppointmentRepository } from '@/infrastructure/repositories/FirebaseAppointmentRepository';
+import { addMinutes, format, isSameDay, isBefore, startOfDay } from 'date-fns';
 
 export default function useNewAppointment() {
   const {
@@ -23,10 +24,12 @@ export default function useNewAppointment() {
   } = useNewAppointmentStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading] = useState(false); // Remove setLoading as it is unused
+  const [loading] = useState(false);
   const [patientName, setPatientName] = useState<string>('');
-  const [availableTimes, setAvailableTimes] = useState<{ time: string; disabled: boolean }[]>(); // Removed `loading` state
-  const { user } = useAuth(); // Use the hook here
+  const [availableTimes, setAvailableTimes] = useState<{ time: string; disabled: boolean }[]>();
+  const { user } = useAuth();
+  const appointmentRepo = new FirebaseAppointmentRepository();
+  const createAppointment = new CreateAppointmentUseCase(appointmentRepo);
 
   useEffect(() => {
     isAuthenticated(async (authState) => {
@@ -68,20 +71,9 @@ export default function useNewAppointment() {
     preferredDate: string,
     preferredTime: string
   ): Promise<boolean> => {
-    try {
-      const appointmentsRef = collection(db, 'appointments');
-      const q = query(
-        appointmentsRef,
-        where('patientId', '==', patientId),
-        where('doctorId', '==', doctorId),
-        where('preferredDate', '==', preferredDate),
-        where('preferredTime', '==', preferredTime)
-      );
-      const querySnapshot = await getDocs(q);
-      return !querySnapshot.empty;
-    } catch {
-      return false;
-    }
+  // Use repository method for existence check
+  const appointments = await appointmentRepo.getByUser(patientId, false);
+  return appointments.some(a => a.doctorId === doctorId && a.preferredDate === preferredDate && a.preferredTime === preferredTime);
   };
 
   const handleSubmit = async (
@@ -102,22 +94,19 @@ export default function useNewAppointment() {
     }
 
     setIsSubmitting(true);
-
     const appointmentData: Omit<Appointment, 'id'> = {
       doctorId: selectedDoctor.id,
       doctorName: selectedDoctor.name,
-      patientId: user.uid, // Use the authenticated user's UID
-      patientName: user.name, // Use the logged-in user's name
+      patientId: user.uid,
+      patientName: user.name,
       appointmentType,
       preferredDate,
       preferredTime,
       notes,
       isPaid: false,
       createdAt: new Date().toISOString(),
-      status: "pending", // Add the missing status property
+      status: AppointmentStatus.Pending,
     };
-
-
     try {
       const exists = await checkAppointmentExists(
         appointmentData.patientId,
@@ -125,27 +114,14 @@ export default function useNewAppointment() {
         appointmentData.preferredDate,
         appointmentData.preferredTime
       );
-
       if (exists) {
-
         setIsSubmitting(false);
         return;
       }
-
-      await addDoc(collection(db, 'appointments'), appointmentData);
-      // Notify doctor via SMS
-      await fetch('/api/sms/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'appointment-request',
-          doctorId: appointmentData.doctorId,
-          patientName: appointmentData.patientName,
-        }),
-      });
+  // Use application layer use case for creation
+  await createAppointment.execute(appointmentData as Appointment);
       resetAppointment();
       setShowModal(true);
-
       let progressValue = 100;
       const interval = setInterval(() => {
         progressValue -= 10;

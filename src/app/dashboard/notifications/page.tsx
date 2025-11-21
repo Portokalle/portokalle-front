@@ -11,6 +11,11 @@ import styles from "./notifications.module.css";
 function NotificationsPage() {
   const nav = useNavigationCoordinator();
   const { appointments, loading: isLoading, error, fetchAppointments } = useAppointmentStore();
+  // Dependency injection for Clean Architecture
+  const { FetchAppointmentsUseCase } = require('@/application/fetchAppointmentsUseCase');
+  const { FirebaseAppointmentRepository } = require('@/infrastructure/repositories/FirebaseAppointmentRepository');
+  const appointmentRepo = new FirebaseAppointmentRepository();
+  const fetchAppointmentsUseCase = new FetchAppointmentsUseCase(appointmentRepo);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [appointmentDetails, setAppointmentDetails] = useState<
     { id: string; patientName: string | null; doctorName: string | null; preferredDate: string; notes: string }[]
@@ -33,7 +38,11 @@ function NotificationsPage() {
         const role = userSnap.data().role;
         setUserRole(role);
         // Always fetch latest notifications when visiting the page
-        await fetchAppointments(auth.currentUser.uid, role === "doctor");
+      await fetchAppointments(
+        auth.currentUser.uid,
+        role === "doctor",
+        (userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor)
+      );
       } else {
         nav.toLogin();
       }
