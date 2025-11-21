@@ -8,7 +8,7 @@ import { sendPasswordResetEmail } from "firebase/auth";
 export async function resetUserPassword(email: string) {
     try {
         await sendPasswordResetEmail(auth, email);
-    } catch (error) {
+    } catch {
         throw new Error('Failed to send password reset email');
     }
 }
