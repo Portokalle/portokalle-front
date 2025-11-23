@@ -11,8 +11,9 @@ const ENV_PRODUCTION = 'production';
 // ------------------------
 // This uses GOOGLE_APPLICATION_CREDENTIALS (path to serviceAccountKey.json)
 if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
+    credential: admin.credential.cert(serviceAccount),
   });
 }
 // ------------------------
