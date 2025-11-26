@@ -11,7 +11,13 @@ const ENV_PRODUCTION = 'production';
 // ------------------------
 // This uses GOOGLE_APPLICATION_CREDENTIALS (path to serviceAccountKey.json)
 if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
+  let serviceAccount;
+  try {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
+  } catch {
+    console.error('FIREBASE_SERVICE_ACCOUNT env is not valid JSON.');
+    throw new Error('FIREBASE_SERVICE_ACCOUNT env is not valid JSON.');
+  }
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
