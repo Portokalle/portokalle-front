@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Appointment } from '../models/Appointment';
+import { Appointment } from '@/domain/entities/Appointment';
 import { parseDateTime } from '../utils/dateFormatter';
 
 export function useUpcomingAppointment(appointments: Appointment[]): Appointment | null {

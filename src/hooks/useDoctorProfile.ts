@@ -1,40 +1,37 @@
-import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../config/firebaseconfig';
+import { useState, useEffect, useMemo } from 'react';
+import { Doctor } from '@/domain/entities/Doctor';
+import { FirebaseUserRepository } from '@/infrastructure/repositories/FirebaseUserRepository';
 
-interface Doctor {
-  id: string;
-  name: string;
-  surname: string;
-  about?: string;
-  expertise?: string[];
-  education?: string[];
-  profilePicture?: string;
-}
 
 export const useDoctorProfile = (id: string) => {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const userRepo = useMemo(() => new FirebaseUserRepository(), []);
 
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        const doctorSnap = await getDoc(doc(db, 'users', id));
-        if (doctorSnap.exists()) {
-          setDoctor({ id: doctorSnap.id, ...doctorSnap.data() } as Doctor);
+        // Use repository to fetch doctor profile
+        const user = await userRepo.getById(id);
+        if (user && user.name) {
+          setDoctor({
+            id: user.id,
+            name: user.name,
+            specialization: user.specialization ?? [],
+            profilePicture: user.profilePicture,
+          });
         } else {
           setError('Doctor not found');
         }
-    } catch {
-  setError('Failed to fetch doctor data');
+      } catch {
+        setError('Failed to fetch doctor data');
       } finally {
         setLoading(false);
       }
     };
-
     fetchDoctor();
-  }, [id]);
+  }, [id, userRepo]);
 
   return { doctor, loading, error };
 };

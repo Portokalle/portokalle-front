@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ClientProviders from "./ClientProviders";
+import { DIProvider } from '@/context/DIContext';
 import Script from "next/script";
 import Analytics from "./analytics/Analytics";
 import { Suspense } from "react";
@@ -38,12 +39,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </Script>
       </head>
       <body className="bg-base-100 min-h-screen">
-        <ClientProviders>
-          <Suspense fallback={null}>
-            <Analytics />
-          </Suspense>
-          {children}
-        </ClientProviders>
+        <DIProvider>
+          <ClientProviders>
+            <Suspense fallback={null}>
+              <Analytics />
+            </Suspense>
+            {children}
+          </ClientProviders>
+        </DIProvider>
       </body>
     </html>
   );

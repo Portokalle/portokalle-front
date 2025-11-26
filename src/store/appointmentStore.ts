@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import { fetchAppointments, setAppointmentPaid, handlePayNow, checkIfPastAppointment, verifyStripePayment, getUserRole } from "../domain/appointmentService";
-import { Appointment } from "../models/Appointment";
-import { getAppointmentAction } from "./appointmentActionButton";
+import { setAppointmentPaid, handlePayNow, checkIfPastAppointment, verifyStripePayment, getUserRole, verifyAndUpdatePayment } from "../domain/appointmentService";
+import { Appointment } from "@/domain/entities/Appointment";
+import { getAppointmentAction } from "../domain/appointmentActionButton";
 import { APPOINTMENT_DURATION_MINUTES } from '../config/appointmentConfig';
-import { USER_ROLE_DOCTOR } from "@/config/userRoles";
+import { isDoctor } from "@/domain/rules/userRules";
 
 interface AppointmentState {
   appointments: Appointment[];
@@ -13,11 +13,12 @@ interface AppointmentState {
   setAppointments: (appointments: Appointment[]) => void;
   setIsDoctor: (isDoctor: boolean | null) => void;
   fetchUserRole: (userId: string) => Promise<void>;
-  fetchAppointments: (userId: string, isDoctor: boolean) => Promise<void>;
+  fetchAppointments: (userId: string, isDoctor: boolean, fetchAppointmentsUseCase: (userId: string, isDoctor: boolean) => Promise<Appointment[]>) => Promise<void>;
   setAppointmentPaid: (appointmentId: string) => Promise<void>;
   handlePayNow: (appointmentId: string, amount: number) => Promise<void>;
   checkIfPastAppointment: (appointmentId: string) => Promise<boolean>;
   verifyStripePayment: (appointmentId: string) => Promise<void>;
+  verifyAndUpdatePayment: (sessionId: string, userId: string, isDoctor: boolean, fetchAppointmentsUseCase: (userId: string, isDoctor: boolean) => Promise<Appointment[]>) => Promise<void>;
   isPastAppointment: (date: string, time: string) => boolean;
   isAppointmentPast: (appointment: Appointment) => boolean;
   getAppointmentAction: (appointment: Appointment) => { label: string; disabled: boolean; variant: string };
@@ -34,22 +35,16 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const role = await getUserRole(userId);
-      set({ isDoctor: role === USER_ROLE_DOCTOR, loading: false });
+      set({ isDoctor: isDoctor(role as import("@/domain/entities/UserRole").UserRole), loading: false });
     } catch {
       set({ error: "Failed to fetch user role", loading: false });
     }
   },
-  fetchAppointments: async (userId: string, isDoctor: boolean) => {
+  fetchAppointments: async (userId: string, isDoctor: boolean, fetchAppointmentsUseCase) => {
     set({ loading: true, error: null });
     try {
-      const fetchedAppointments: Appointment[] = await fetchAppointments(userId, isDoctor);
-      const updatedAppointments = fetchedAppointments.map((appointment) => {
-        const appointmentDateTime = new Date(`${appointment.preferredDate}T${appointment.preferredTime}`);
-        const appointmentEndTime = new Date(appointmentDateTime.getTime() + APPOINTMENT_DURATION_MINUTES * 60000); // use constant
-        const isPast = appointmentEndTime < new Date();
-        return { ...appointment, isPast };
-      });
-      set({ appointments: updatedAppointments, loading: false });
+      const fetchedAppointments: Appointment[] = await fetchAppointmentsUseCase(userId, isDoctor);
+      set({ appointments: fetchedAppointments, loading: false });
     } catch {
       set({ error: "Failed to fetch appointments", loading: false });
     }
@@ -58,6 +53,8 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   handlePayNow: async (appointmentId, amount) => handlePayNow(appointmentId, amount),
   checkIfPastAppointment: async (appointmentId) => checkIfPastAppointment(appointmentId),
   verifyStripePayment: async (appointmentId) => verifyStripePayment(appointmentId, get().setAppointmentPaid),
+  verifyAndUpdatePayment: async (sessionId, userId, isDoctor, fetchAppointmentsUseCase) =>
+    verifyAndUpdatePayment(sessionId, userId, isDoctor, get().setAppointmentPaid, async (userId, isDoctor) => get().fetchAppointments(userId, isDoctor, fetchAppointmentsUseCase)),
   isPastAppointment: (date, time) => {
     const appointmentDateTime = new Date(`${date}T${time}`);
     const appointmentEndTime = new Date(appointmentDateTime.getTime() + 30 * 60000);
@@ -71,10 +68,10 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   getAppointmentAction: (appointment) => getAppointmentAction(appointment, get().isAppointmentPast),
 }));
 
-export const useInitializeAppointments = () => {
+export const useInitializeAppointments = (fetchAppointmentsUseCase: (userId: string, isDoctor: boolean) => Promise<Appointment[]>) => {
   const { fetchAppointments, setIsDoctor } = useAppointmentStore();
   return async (userId: string, isDoctor: boolean) => {
     setIsDoctor(isDoctor);
-    await fetchAppointments(userId, isDoctor);
+    await fetchAppointments(userId, isDoctor, fetchAppointmentsUseCase);
   };
 };

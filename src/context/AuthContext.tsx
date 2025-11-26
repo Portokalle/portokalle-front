@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebaseconfig'; // Import your Firestore config
-import { UserRole } from '@/models/UserRole';
+import { UserRole } from '@/domain/entities/UserRole';
 
 interface AuthContextType {
   isAuthenticated: boolean;
