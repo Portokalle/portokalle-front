@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useVideoStore } from '@/store/videoStore';
 import RoleGuard from '@/app/components/RoleGuard';
 import { AppointmentsTable } from '@/app/components/appointment/SharedAppointmentsTable';
+import { appointmentRepository } from '@/infrastructure/appointmentRepository';
 import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/config/userRoles';
 
 
@@ -70,15 +71,27 @@ function AppointmentsPage() {
         return;
       }
       const appointment = appointments.find(a => a.id === appointmentId);
-      const patientName = appointment?.patientName || user.name || 'Guest';
-      const { generateRoomCodeAndStore } = useVideoStore.getState();
+      if (!appointment) throw new Error('Appointment not found');
+      const patientName = appointment.patientName || user.name || 'Guest';
       const role = isDoctor ? 'doctor' : 'patient';
-      const roomCode = await generateRoomCodeAndStore({
-        appointmentId,
-        userId: user.uid,
-        role,
-        userName: patientName,
-      });
+      let roomCode = appointment.roomCode;
+      let roomId = appointment.roomId;
+      // If missing, generate and update
+      if (!roomCode || !roomId) {
+        const { generateRoomCodeAndToken } = await import('@/domain/100msService');
+        const data = await generateRoomCodeAndToken({
+          user_id: user.uid,
+          room_id: appointmentId,
+          role,
+        });
+        roomCode = data.roomCode;
+        roomId = data.room_id;
+        // Update appointment in Firestore
+        if (roomCode && roomId) {
+          await appointmentRepository.update(appointmentId, { roomCode, roomId });
+        }
+      }
+      if (!roomCode) throw new Error('No roomCode available');
       window.localStorage.setItem('videoSessionRoomCode', roomCode);
       window.localStorage.setItem('videoSessionUserName', patientName);
       window.location.href = '/dashboard/appointments/video-session';

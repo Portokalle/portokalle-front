@@ -1,6 +1,6 @@
 import axios from 'axios';
 import qs from 'qs';
-import { getUserPhoneNumber } from '@/domain/userService';
+import { getUserPhoneNumber } from './userService';
 
 const VONAGE_API_KEY = process.env.NEXT_PUBLIC_VONAGE_API_KEY;
 const VONAGE_API_SECRET = process.env.NEXT_PUBLIC_VONAGE_API_SECRET;
