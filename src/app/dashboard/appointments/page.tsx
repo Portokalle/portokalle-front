@@ -7,7 +7,7 @@ import { getAppointments } from '@/domain/appointmentService';
 import { useAuth } from '@/context/AuthContext';
 import { useVideoStore } from '@/store/videoStore';
 import RoleGuard from '@/app/components/RoleGuard';
-import { AppointmentsTable } from '@/app/components/SharedAppointmentsTable';
+import { AppointmentsTable } from '@/app/components/appointment/SharedAppointmentsTable';
 import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/config/userRoles';
 
 
