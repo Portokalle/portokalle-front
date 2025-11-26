@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { setAppointmentPaid, handlePayNow, checkIfPastAppointment, verifyStripePayment, getUserRole } from "../domain/appointmentService";
+import { setAppointmentPaid, handlePayNow, checkIfPastAppointment, verifyStripePayment, getUserRole, verifyAndUpdatePayment } from "../domain/appointmentService";
 import { Appointment } from "@/domain/entities/Appointment";
 import { getAppointmentAction } from "../domain/appointmentActionButton";
 import { APPOINTMENT_DURATION_MINUTES } from '../config/appointmentConfig';
@@ -18,6 +18,7 @@ interface AppointmentState {
   handlePayNow: (appointmentId: string, amount: number) => Promise<void>;
   checkIfPastAppointment: (appointmentId: string) => Promise<boolean>;
   verifyStripePayment: (appointmentId: string) => Promise<void>;
+  verifyAndUpdatePayment: (sessionId: string, userId: string, isDoctor: boolean, fetchAppointmentsUseCase: (userId: string, isDoctor: boolean) => Promise<Appointment[]>) => Promise<void>;
   isPastAppointment: (date: string, time: string) => boolean;
   isAppointmentPast: (appointment: Appointment) => boolean;
   getAppointmentAction: (appointment: Appointment) => { label: string; disabled: boolean; variant: string };
@@ -52,6 +53,8 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
   handlePayNow: async (appointmentId, amount) => handlePayNow(appointmentId, amount),
   checkIfPastAppointment: async (appointmentId) => checkIfPastAppointment(appointmentId),
   verifyStripePayment: async (appointmentId) => verifyStripePayment(appointmentId, get().setAppointmentPaid),
+  verifyAndUpdatePayment: async (sessionId, userId, isDoctor, fetchAppointmentsUseCase) =>
+    verifyAndUpdatePayment(sessionId, userId, isDoctor, get().setAppointmentPaid, async (userId, isDoctor) => get().fetchAppointments(userId, isDoctor, fetchAppointmentsUseCase)),
   isPastAppointment: (date, time) => {
     const appointmentDateTime = new Date(`${date}T${time}`);
     const appointmentEndTime = new Date(appointmentDateTime.getTime() + 30 * 60000);

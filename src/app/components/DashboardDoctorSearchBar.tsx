@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import DoctorSearchModal from './DoctorSearchModal';

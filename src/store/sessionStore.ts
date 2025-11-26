@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { LogoutSessionUseCase } from '../application/logoutSessionUseCase';
 import { setCookie, getCookie, deleteCookie } from '@/domain/sessionUtils';
+import { logoutApi } from '@/network/logoutApi';
 
 // 30 minutes idle timeout
 const IDLE_MS = 30 * 60 * 1000;
@@ -128,12 +129,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       window.location.href = '/login?reason=idle-timeout';
     }
   },
-  logout: (reason?: string, logoutSessionUseCase?: LogoutSessionUseCase) => {
+  logout: async (reason?: string, logoutSessionUseCase?: LogoutSessionUseCase) => {
     if (logoutSessionUseCase) logoutSessionUseCase.execute();
-    // Ask server to clear HttpOnly cookie
-    if (typeof fetch !== 'undefined') {
-      fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
-    }
+    // Ask server to clear HttpOnly cookie via network layer
+    try {
+      await logoutApi();
+    } catch {}
     deleteCookie('userRole');
     deleteCookie('lastActivity');
     deleteCookie('loggedIn');

@@ -1,1 +1,0 @@
-export { AppointmentsTable } from './SharedAppointmentsTable';

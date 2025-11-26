@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RedirectingModal from '../../components/RedirectingModal';
-import { useAppointmentStore } from "../../../store/appointmentStore";
-import { useAuth } from "../../../context/AuthContext";
-import { useVideoStore } from "../../../store/videoStore";
-import RoleGuard from '../../components/RoleGuard';
-import { AppointmentsTable } from '../../components/SharedAppointmentsTable';
-// import removed: getUserRole now handled by store
-import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '../../../config/userRoles';
+import RedirectingModal from '@/app/components/RedirectingModal';
+import { useAppointmentStore } from '@/store/appointmentStore';
+import { getAppointments } from '@/domain/appointmentService';
+import { useAuth } from '@/context/AuthContext';
+import { useVideoStore } from '@/store/videoStore';
+import RoleGuard from '@/app/components/RoleGuard';
+import { AppointmentsTable } from '@/app/components/SharedAppointmentsTable';
+import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/config/userRoles';
 
 
 function AppointmentsPage() {
@@ -17,11 +17,10 @@ function AppointmentsPage() {
   const {
     appointments,
     isDoctor,
-    setAppointmentPaid,
     handlePayNow,
     isAppointmentPast,
     fetchAppointments,
-    // Remove fetchUserRole from store, use domain/application layer instead
+    verifyAndUpdatePayment,
   } = useAppointmentStore();
   const { setAuthStatus } = useVideoStore();
 
@@ -42,7 +41,7 @@ function AppointmentsPage() {
   // Fetch appointments on user/role change
   useEffect(() => {
     if (!user?.uid || typeof isDoctor !== 'boolean') return;
-    fetchAppointments(user.uid, isDoctor);
+    fetchAppointments(user.uid, isDoctor, getAppointments);
   }, [user, isDoctor, fetchAppointments]);
 
   // Check payment status on mount
@@ -51,22 +50,14 @@ function AppointmentsPage() {
     if (!sessionId) return;
     (async () => {
       try {
-        const response = await fetch(`/api/stripe/verify-payment?session_id=${sessionId}`);
-        if (!response.ok) throw new Error('Failed to verify payment');
-        const { appointmentId } = await response.json();
-        setAppointmentPaid(appointmentId);
-        await fetch(`/api/appointments/update-status`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ appointmentId, isPaid: true }),
-        });
         if (user?.uid && typeof isDoctor === 'boolean') {
-          await fetchAppointments(user.uid, isDoctor);
+          await verifyAndUpdatePayment(sessionId, user.uid, isDoctor, getAppointments);
         }
-  } catch {
-  }
+      } catch {
+        // Optionally handle error
+      }
     })();
-  }, [setAppointmentPaid, user, isDoctor, fetchAppointments]);
+  }, [verifyAndUpdatePayment, user, isDoctor]);
 
   // Join call handler
   const handleJoinCall = async (appointmentId: string) => {
