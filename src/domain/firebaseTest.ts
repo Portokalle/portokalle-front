@@ -6,13 +6,10 @@ import { getAuth } from 'firebase/auth';
  */
 export const testFirebaseConnection = async (): Promise<void> => {
     try {
-        // Test Firebase Auth connection first
         const auth = getAuth();
         if (!auth) {
             throw new Error('Firebase Auth initialization failed');
         }
-        // Skip Firestore test for now as it requires authentication and proper permissions
-        // We'll consider the connection successful if Auth initializes properly
         return Promise.resolve();
     } catch {
         throw new Error('An unknown error occurred');
