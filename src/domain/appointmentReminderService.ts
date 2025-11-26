@@ -1,5 +1,5 @@
-import { getUserPhoneNumber } from '@/domain/userService';
-import { sendPatientAppointmentReminderSMS } from '@/domain/smsService';
+import { getUserPhoneNumber } from './userService';
+import { sendPatientAppointmentReminderSMS } from './smsService';
 import { Appointment } from '@/domain/entities/Appointment';
 
 /**
