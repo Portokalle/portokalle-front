@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RedirectingModal from '../../components/RedirectingModal';
-import { useAppointmentStore } from "../../../store/appointmentStore";
-import { useAuth } from "../../../context/AuthContext";
-import { useVideoStore } from "../../../store/videoStore";
-import RoleGuard from '../../components/RoleGuard';
-import { AppointmentsTable } from '../../components/SharedAppointmentsTable';
-// import removed: getUserRole now handled by store
-import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '../../../config/userRoles';
+import RedirectingModal from '@/app/components/RedirectingModal';
+import { useAppointmentStore } from '@/store/appointmentStore';
+import { getAppointments } from '@/domain/appointmentService';
+import { useAuth } from '@/context/AuthContext';
+import { useVideoStore } from '@/store/videoStore';
+import RoleGuard from '@/app/components/RoleGuard';
+import { AppointmentsTable } from '@/app/components/appointment/SharedAppointmentsTable';
+import { appointmentRepository } from '@/infrastructure/appointmentRepository';
+import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/config/userRoles';
 
 
 function AppointmentsPage() {
@@ -17,11 +18,10 @@ function AppointmentsPage() {
   const {
     appointments,
     isDoctor,
-    setAppointmentPaid,
     handlePayNow,
     isAppointmentPast,
     fetchAppointments,
-    fetchUserRole,
+    verifyAndUpdatePayment,
   } = useAppointmentStore();
   const { setAuthStatus } = useVideoStore();
 
@@ -33,13 +33,16 @@ function AppointmentsPage() {
   // Set doctor/patient role
   useEffect(() => {
     if (!user?.uid) return;
-    fetchUserRole(user.uid);
-  }, [user, fetchUserRole]);
+    // Use domain/application layer to fetch user role
+    // Example: import { fetchUserRoleUseCase } from '@/application/fetchUserRoleUseCase';
+    // fetchUserRoleUseCase(user.uid).then(role => { /* update store or local state */ });
+    // For now, remove direct store call
+  }, [user]);
 
   // Fetch appointments on user/role change
   useEffect(() => {
     if (!user?.uid || typeof isDoctor !== 'boolean') return;
-    fetchAppointments(user.uid, isDoctor);
+    fetchAppointments(user.uid, isDoctor, getAppointments);
   }, [user, isDoctor, fetchAppointments]);
 
   // Check payment status on mount
@@ -48,22 +51,14 @@ function AppointmentsPage() {
     if (!sessionId) return;
     (async () => {
       try {
-        const response = await fetch(`/api/stripe/verify-payment?session_id=${sessionId}`);
-        if (!response.ok) throw new Error('Failed to verify payment');
-        const { appointmentId } = await response.json();
-        setAppointmentPaid(appointmentId);
-        await fetch(`/api/appointments/update-status`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ appointmentId, isPaid: true }),
-        });
         if (user?.uid && typeof isDoctor === 'boolean') {
-          await fetchAppointments(user.uid, isDoctor);
+          await verifyAndUpdatePayment(sessionId, user.uid, isDoctor, getAppointments);
         }
-  } catch {
-  }
+      } catch {
+        // Optionally handle error
+      }
     })();
-  }, [setAppointmentPaid, user, isDoctor, fetchAppointments]);
+  }, [verifyAndUpdatePayment, user, isDoctor]);
 
   // Join call handler
   const handleJoinCall = async (appointmentId: string) => {
@@ -76,15 +71,27 @@ function AppointmentsPage() {
         return;
       }
       const appointment = appointments.find(a => a.id === appointmentId);
-      const patientName = appointment?.patientName || user.name || 'Guest';
-      const { generateRoomCodeAndStore } = useVideoStore.getState();
+      if (!appointment) throw new Error('Appointment not found');
+      const patientName = appointment.patientName || user.name || 'Guest';
       const role = isDoctor ? 'doctor' : 'patient';
-      const roomCode = await generateRoomCodeAndStore({
-        appointmentId,
-        userId: user.uid,
-        role,
-        userName: patientName,
-      });
+      let roomCode = appointment.roomCode;
+      let roomId = appointment.roomId;
+      // If missing, generate and update
+      if (!roomCode || !roomId) {
+        const { generateRoomCodeAndToken } = await import('@/domain/100msService');
+        const data = await generateRoomCodeAndToken({
+          user_id: user.uid,
+          room_id: appointmentId,
+          role,
+        });
+        roomCode = data.roomCode;
+        roomId = data.room_id;
+        // Update appointment in Firestore
+        if (roomCode && roomId) {
+          await appointmentRepository.update(appointmentId, { roomCode, roomId });
+        }
+      }
+      if (!roomCode) throw new Error('No roomCode available');
       window.localStorage.setItem('videoSessionRoomCode', roomCode);
       window.localStorage.setItem('videoSessionUserName', patientName);
       window.location.href = '/dashboard/appointments/video-session';

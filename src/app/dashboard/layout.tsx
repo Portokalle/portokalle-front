@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ReactElement } from 'react';
 import { usePathname } from 'next/navigation';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { useInitializeAppointments } from '../../store/appointmentStore';
+import { useDI } from '@/context/DIContext';
 import { useAuth } from '@/context/AuthContext';
 import { getNavigationPaths, NavigationKey } from '@/store/navigationStore';
 import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
@@ -24,8 +25,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   
 
-  const { role, loading, isAuthenticated } = useAuth();
-  useInitializeAppointments();
+  const { role, loading, isAuthenticated, user } = useAuth();
+  // Use DI context for Clean Architecture
+  const { fetchAppointmentsUseCase } = useDI();
+  // Only call initializeAppointments when authenticated and role/user available
+  const initializeAppointments = useInitializeAppointments((userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor));
+  // Prevent infinite loop: only initialize once when role becomes available
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!initializedRef.current && isAuthenticated && role && user && initializeAppointments) {
+      const isDoctor = role === 'doctor';
+      initializeAppointments(user.uid, isDoctor);
+      initializedRef.current = true;
+    }
+  }, [isAuthenticated, role, user, initializeAppointments]);
 
   // Service Worker Registration
   useEffect(() => {

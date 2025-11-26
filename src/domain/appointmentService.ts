@@ -1,37 +1,44 @@
-// Fetch appointments for a user (doctor or patient)
-import { Appointment } from "@/models/Appointment";
-import { query, where, getDocs } from "firebase/firestore";
+// Verify payment and update appointment status
+import { verifyStripeSession, updateAppointmentStatus } from '@/network/stripeApiClient';
 
-export async function fetchAppointments(userId: string, isDoctor: boolean): Promise<Appointment[]> {
-  if (!userId) throw new Error("User ID is missing");
-  const appointmentsRef = collection(db, FirestoreCollections.Appointments);
-  const q = query(
-    appointmentsRef,
-    where(isDoctor ? "doctorId" : "patientId", "==", userId)
-  );
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Appointment));
+export async function verifyAndUpdatePayment(sessionId: string, userId: string, isDoctor: boolean, setAppointmentPaid: (id: string) => Promise<void>, fetchAppointments: (userId: string, isDoctor: boolean) => Promise<void>) {
+  // 1. Verify payment with backend
+  const { data, status } = await verifyStripeSession(sessionId);
+  if (status !== 200 || !data.appointmentId) throw new Error('Failed to verify payment');
+  const { appointmentId } = data;
+  // 2. Mark appointment as paid
+  await setAppointmentPaid(appointmentId);
+  // 3. Update appointment status in backend
+  await updateAppointmentStatus(appointmentId, true);
+  // 4. Refresh appointments
+  if (userId && typeof isDoctor === 'boolean') {
+    await fetchAppointments(userId, isDoctor);
+  }
 }
+// Fetch appointments for a user (doctor or patient)
+// import { Appointment } from "@/domain/entities/Appointment";
+import { isValidAppointment, isAppointmentPaid } from './rules/appointmentRules';
 import { getDefaultPatientName, getDefaultStatus } from "@/utils/userUtils";
-import { collection, doc, addDoc, updateDoc, getDoc } from "firebase/firestore";
-import { db } from "@/config/firebaseconfig";
+import { appointmentRepository } from '@/infrastructure/appointmentRepository';
 import { getAuth } from "firebase/auth";
 import { createPaymentIntent, verifyPayment } from "@/network/apiClient+payment";
-import { getUserPhoneNumber } from "@/services/userService";
-import { sendDoctorAppointmentRequestSMS } from "@/services/smsService";
+import { getUserPhoneNumber } from "@/domain/userService";
+import { sendDoctorAppointmentRequestSMS } from "@/domain/smsService";
 
-import { FirestoreCollections } from "@/models/FirestoreConstants";
+import { userRepository } from '@/infrastructure/userRepository';
 import type { AppointmentPayload } from "@/models/AppointmentPayload";
 import type { BookAppointmentPayload } from "@/models/BookAppointmentPayload";
-import { updateSlotStatus } from "@/utils/slotUtils";
-import { SlotStatus } from "@/models/SlotStatus";
+import { updateSlotStatus } from "@/domain/slotService";
+import { SlotStatus } from "@/domain/entities/SlotStatus";
 import { USER_ROLE_PATIENT } from "@/config/userRoles";
 
 
 // Mark appointment as paid
 export async function setAppointmentPaid(appointmentId: string): Promise<void> {
-  const appointmentRef = doc(db, FirestoreCollections.Appointments, appointmentId);
-  await updateDoc(appointmentRef, { isPaid: true });
+  const updated = await appointmentRepository.markAsPaid(appointmentId);
+  if (!isAppointmentPaid(updated)) {
+    throw new Error('Appointment payment status not updated correctly.');
+  }
 }
 
 // Handle Stripe payment
@@ -44,15 +51,19 @@ export async function handlePayNow(appointmentId: string, amount: number): Promi
   }
 }
 
+
+export async function getAppointments(userId: string, isDoctor: boolean) {
+  if (!userId) throw new Error("User ID is missing");
+  const appointments = await appointmentRepository.getByUser(userId, isDoctor);
+  return appointments.filter(isValidAppointment);
+}
+
 // Check if appointment is past by id
-export async function checkIfPastAppointment(appointmentId: string): Promise<boolean> {
-  const appointmentRef = doc(db, FirestoreCollections.Appointments, appointmentId);
-  const appointmentDoc = await getDoc(appointmentRef);
-  if (!appointmentDoc.exists()) {
-    return false;
-  }
-  const appointmentData = appointmentDoc.data();
-  const appointmentDateTime = new Date(`${appointmentData.preferredDate}T${appointmentData.preferredTime}`);
+
+export async function checkIfPastAppointment(appointmentId: string) {
+  const appointment = await appointmentRepository.getById(appointmentId);
+  if (!appointment) return false;
+  const appointmentDateTime = new Date(`${appointment.preferredDate}T${appointment.preferredTime}`);
   const appointmentEndTime = new Date(appointmentDateTime.getTime() + 30 * 60000);
   return appointmentEndTime < new Date();
 }
@@ -68,23 +79,37 @@ export async function verifyStripePayment(appointmentId: string, setAppointmentP
   }
 }
 
-export async function getUserRole(userId: string): Promise<string> {
+
+export async function getUserRole(userId: string) {
   try {
-    const snap = await getDoc(doc(db, FirestoreCollections.Users, userId));
-    return snap.exists() ? (snap.data().role ?? USER_ROLE_PATIENT) : USER_ROLE_PATIENT;
+    const user = await userRepository.getById(userId);
+    return user?.role ?? USER_ROLE_PATIENT;
   } catch {
     return USER_ROLE_PATIENT;
   }
 }
 
 async function createAndNotifyAppointment(payload: AppointmentPayload): Promise<{ id: string } & AppointmentPayload> {
-  const appointment = { ...payload, createdAt: new Date().toISOString() };
+  // Map status string to AppointmentStatus enum value
+  const { status, ...rest } = payload;
+  const { AppointmentStatus } = await import('./entities/AppointmentStatus');
+  type AppointmentStatusType = (typeof AppointmentStatus)[keyof typeof AppointmentStatus];
+  const statusEnum: AppointmentStatusType = Object.values(AppointmentStatus).includes(status as AppointmentStatusType)
+    ? (status as AppointmentStatusType)
+    : AppointmentStatus.Pending;
+  const appointment = {
+    ...rest,
+    status: statusEnum,
+    createdAt: new Date().toISOString(),
+  };
   try {
-    const docRef = await addDoc(collection(db, FirestoreCollections.Appointments), appointment);
+    const created = await appointmentRepository.create(appointment);
     const doctorPhone = await getUserPhoneNumber(payload.doctorId);
     if (doctorPhone) await sendDoctorAppointmentRequestSMS(doctorPhone, payload.patientName);
-    return { id: docRef.id, ...appointment };
-  } catch {
+    // Return as AppointmentPayload (status as string)
+    return { id: created.id, ...payload };
+  } catch (error) {
+    console.error('Appointment booking error:', error, appointment);
     throw new Error('Failed to book appointment.');
   }
 }

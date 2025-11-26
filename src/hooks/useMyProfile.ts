@@ -56,6 +56,9 @@ export const useMyProfile = () => {
     }
   };
 
+  // Helper to check if profile is complete
+  // Removed unused checkProfileComplete function
+
   // Fetch user data from Firestore
   useEffect(() => {
     const fetchUserData = async () => {

@@ -3,6 +3,7 @@ const nextConfig = {
   images: {
     domains: ['tailwindcss.com', 'portokalle-storage.fra1.digitaloceanspaces.com', 'images.unsplash.com'],
   },
+  productionBrowserSourceMaps: false,
 };
 
 module.exports = nextConfig;

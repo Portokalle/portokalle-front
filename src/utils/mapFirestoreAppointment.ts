@@ -1,4 +1,5 @@
-import { Appointment } from "@/models/Appointment";
+import { Appointment } from "@/domain/entities/Appointment";
+import { AppointmentStatus } from "@/domain/entities/AppointmentStatus";
 
 /**
  * FirestoreDoc type for Firestore document snapshots or plain objects.
@@ -32,6 +33,18 @@ export function mapFirestoreAppointment(doc: FirestoreDoc): Appointment {
     [key: string]: unknown;
   };
   const d: FirestoreAppointmentData = data as FirestoreAppointmentData;
+  // Map Firestore string status to AppointmentStatus enum, defaulting to Pending if invalid
+  let status: AppointmentStatus;
+  switch (d.status) {
+    case AppointmentStatus.Accepted:
+    case AppointmentStatus.Rejected:
+    case AppointmentStatus.Finished:
+    case AppointmentStatus.Pending:
+      status = d.status as AppointmentStatus;
+      break;
+    default:
+      status = AppointmentStatus.Pending;
+  }
   return {
     id: doc.id || d.id || '',
     doctorId: d.doctorId || '',
@@ -44,7 +57,7 @@ export function mapFirestoreAppointment(doc: FirestoreDoc): Appointment {
     notes: d.notes || '',
     isPaid: typeof d.isPaid === 'boolean' ? d.isPaid : false,
     createdAt: d.createdAt || new Date().toISOString(),
-    status: d.status || 'pending',
+    status,
     roomId: d.roomId || undefined,
   };
 }
