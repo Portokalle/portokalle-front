@@ -6,12 +6,7 @@ import { useDI } from '@/context/DIContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
-interface Appointment {
-  id: string;
-  doctorId: string;
-  appointmentType: string;
-  // Add other fields as needed
-}
+import type { Appointment } from '@/domain/entities/Appointment';
 
 export default function UpcomingRequestsPage() {
   const [requests, setRequests] = useState<Appointment[]>([]);
@@ -29,7 +24,7 @@ export default function UpcomingRequestsPage() {
           const isDoctor = role === 'doctor';
           const allAppointments = await fetchAppointmentsUseCase.execute(user.uid, isDoctor);
           // Filter for pending requests (assuming status field exists)
-          const pendingRequests = allAppointments.filter((appt: any) => appt.status === 'pending');
+          const pendingRequests = allAppointments.filter((appt: Appointment) => appt.status === 'pending');
           setRequests(pendingRequests);
         } else {
           setRequests([]);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import RoleGuard from '../../../components/RoleGuard';
 import { UserRole } from '@/domain/entities/UserRole';
@@ -9,6 +9,8 @@ import Loader from '../../../components/Loader';
 import { useAuth } from '../../../../context/AuthContext';
 import { useAppointmentStore } from '../../../../store/appointmentStore';
 import { Event as RBCEvent } from 'react-big-calendar';
+import { FetchAppointmentsUseCase } from '@/application/fetchAppointmentsUseCase';
+import { FirebaseAppointmentRepository } from '@/infrastructure/repositories/FirebaseAppointmentRepository';
 
 export default function DoctorCalendarPage() {
   const { t } = useTranslation();
@@ -17,10 +19,11 @@ export default function DoctorCalendarPage() {
   const [events, setEvents] = useState<RBCEvent[]>([]);
 
   // Dependency injection for Clean Architecture
-  const { FetchAppointmentsUseCase } = require('@/application/fetchAppointmentsUseCase');
-  const { FirebaseAppointmentRepository } = require('@/infrastructure/repositories/FirebaseAppointmentRepository');
-  const appointmentRepo = new FirebaseAppointmentRepository();
-  const fetchAppointmentsUseCase = new FetchAppointmentsUseCase(appointmentRepo);
+  // Memoize use case to avoid recreating on every render
+  const fetchAppointmentsUseCase = React.useMemo(() => {
+    const appointmentRepo = new FirebaseAppointmentRepository();
+    return new FetchAppointmentsUseCase(appointmentRepo);
+  }, []);
 
   useEffect(() => {
     if (!user?.uid) return;

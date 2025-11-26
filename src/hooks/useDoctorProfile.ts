@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Doctor } from '@/domain/entities/Doctor';
 import { FirebaseUserRepository } from '@/infrastructure/repositories/FirebaseUserRepository';
 
@@ -7,7 +7,7 @@ export const useDoctorProfile = (id: string) => {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const userRepo = new FirebaseUserRepository();
+  const userRepo = useMemo(() => new FirebaseUserRepository(), []);
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -18,7 +18,7 @@ export const useDoctorProfile = (id: string) => {
           setDoctor({
             id: user.id,
             name: user.name,
-            specialization: user.specialization,
+            specialization: user.specialization ?? [],
             profilePicture: user.profilePicture,
           });
         } else {
@@ -31,7 +31,7 @@ export const useDoctorProfile = (id: string) => {
       }
     };
     fetchDoctor();
-  }, [id]);
+  }, [id, userRepo]);
 
   return { doctor, loading, error };
 };

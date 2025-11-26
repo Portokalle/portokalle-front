@@ -4,7 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../config/firebaseconfig';
 
 export class FirebaseUserRepository implements IUserRepository {
-  async getById(id: string): Promise<any | null> {
+  async getById(id: string): Promise<{ id: string; role: UserRole; name?: string; specialization?: string[]; profilePicture?: string } | null> {
     const userRef = doc(db, 'users', id);
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) return null;
@@ -20,24 +20,24 @@ export class FirebaseUserRepository implements IUserRepository {
     };
   }
 
-  async getByRole(role: UserRole): Promise<Array<{ id: string; role: UserRole }>> {
+  async getByRole(_role: UserRole): Promise<Array<{ id: string; role: UserRole }>> {
     // Implement as needed
     return [];
   }
 
-  async create(payload: { id: string; role: UserRole }): Promise<void> {
+  async create(_payload: { id: string; role: UserRole }): Promise<void> {
     // Implement as needed
   }
 
-  async update(id: string, updates: Partial<{ role: UserRole }>): Promise<void> {
+  async update(_id: string, _updates: Partial<{ role: UserRole }>): Promise<void> {
     // Implement as needed
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     // Implement as needed
   }
 
-  async authenticate(email: string, password: string): Promise<{ id: string; role: UserRole } | null> {
+  async authenticate(_email: string, _password: string): Promise<{ id: string; role: UserRole } | null> {
     // Implement as needed
     return null;
   }
