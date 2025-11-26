@@ -1,5 +1,5 @@
 import { db } from '@/config/firebaseconfig';
-import { auth } from '@/config/firebaseconfig';
+// import { auth } from '@/config/firebaseconfig';
 import { doc, getDoc, collection, updateDoc } from 'firebase/firestore';
 import { Appointment } from './entities/Appointment';
 
@@ -9,7 +9,7 @@ export async function getUserRole(userId: string): Promise<string | null> {
   return userSnap.exists() ? userSnap.data().role : null;
 }
 
-export async function fetchAppointmentDetails(appointments: Appointment[]): Promise<any[]> {
+export async function fetchAppointmentDetails(appointments: Appointment[]): Promise<Array<{ id: string; patientName: string | null; doctorName: string | null; preferredDate: string; notes: string }>> {
   return Promise.all(
     appointments.map(async (appointment) => {
       try {

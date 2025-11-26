@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { isProfileComplete } from "@/domain/rules/doctorRules";
 import { db } from "../config/firebaseconfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { resetUserPassword } from "../domain/authService";
@@ -58,14 +57,7 @@ export const useMyProfile = () => {
   };
 
   // Helper to check if profile is complete
-  const checkProfileComplete = () => {
-    return isProfileComplete({
-      id: user?.uid || "",
-      name: formData.name,
-      specialization: formData.specializations,
-      profilePicture: formData.profilePicture,
-    });
-  };
+  // Removed unused checkProfileComplete function
 
   // Fetch user data from Firestore
   useEffect(() => {

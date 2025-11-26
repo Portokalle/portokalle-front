@@ -16,7 +16,7 @@ export async function verifyAndUpdatePayment(sessionId: string, userId: string, 
   }
 }
 // Fetch appointments for a user (doctor or patient)
-import { Appointment } from "@/domain/entities/Appointment";
+// import { Appointment } from "@/domain/entities/Appointment";
 import { isValidAppointment, isAppointmentPaid } from './rules/appointmentRules';
 import { getDefaultPatientName, getDefaultStatus } from "@/utils/userUtils";
 import { appointmentRepository } from '@/infrastructure/appointmentRepository';

@@ -156,7 +156,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 						})
 						.slice(0, maxRows)
 						.map((appointment) => {
-							const action = getAppointmentAction(appointment, isAppointmentPast, role as any);
+							const action = getAppointmentAction(appointment, isAppointmentPast, role as UserRole);
 							return (
 								<div key={appointment.id} className="rounded-xl shadow bg-white p-4 flex flex-col gap-2">
 									<div className="flex justify-between items-center">
