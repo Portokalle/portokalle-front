@@ -137,7 +137,7 @@ export default function NavBar() {
             <a href="#" className="text-black hover:text-[#ea580c] cursor-pointer" onClick={() => handleNavItemClick('/individuals')}>
               {t('individuals')}
             </a>
-            <a href="#" className="text-black hover:text-[#ea580c] cursor-pointer" onClick={() => handleNavItemClick('/organizations')}>
+            <a href="#" className="text-black hover:text-[#ea580c] cursor-pointer" onClick={() => handleNavItemClick('/doctors')}>
               {t('doctors')}
             </a>
             <a href="#" className="text-black hover:text-[#ea580c] cursor-pointer" onClick={() => handleNavItemClick('/clinicians')}>
@@ -207,7 +207,7 @@ export default function NavBar() {
             <Link href="/individuals" className="text-blue-600 py-4 px-6 border-b border-gray-100 cursor-pointer" onClick={() => handleNavItemClick('/individuals')}>
               {t('individuals')}
             </Link>
-            <Link href="/doctors" className="text-blue-600 py-4 px-6 border-b border-gray-100 cursor-pointer" onClick={() => handleNavItemClick('/organizations')}>
+            <Link href="/doctors" className="text-blue-600 py-4 px-6 border-b border-gray-100 cursor-pointer" onClick={() => handleNavItemClick('/doctors')}>
               {t('doctors')}
             </Link>
             <Link href="/clinicians" className="text-blue-600 py-4 px-6 border-b border-gray-100 cursor-pointer" onClick={() => handleNavItemClick('/clinicians')}>
