@@ -63,6 +63,11 @@ html, body {
   line-height: 1.6;
 }
 
+/* App-wide font utility to enforce Mulish where needed */
+.font-app {
+  font-family: 'Mulish', Arial, Helvetica, sans-serif;
+}
+
 a {
   color: #0056b3;
   text-decoration: none;

@@ -1,36 +1,59 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Rules for the 'users' collection
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (request.auth.token.admin == true || request.auth.token.role == "admin");
+    }
+
+    // Users collection
     match /users/{userId} {
-      // Allow read for all authenticated users
-      allow read: if request.auth != null;
+      // Allow reads for all
+      allow read: if true;
+
+      // Allow user to write own doc OR allow admins to write any user doc
+      allow write: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
     }
 
-    // Rules for the 'appointments' collection
-    match /appointments/{appointmentId} {
-      // Allow creation of appointments if the user is authenticated and the patientId matches the authenticated user
-      allow create: if request.auth != null && request.resource.data.patientId == request.auth.uid;
-
-      // Allow reading appointments if the authenticated user is either the patient, the doctor, or an admin
-      allow read: if request.auth != null &&
-        (resource.data.patientId == request.auth.uid || 
-         resource.data.doctorId == request.auth.uid || 
-         request.auth.token.role == "admin");
-
-      // Allow updating appointments if the authenticated user is either the patient or the doctor
-      allow update: if request.auth != null &&
-        (request.auth.uid == resource.data.patientId || request.auth.uid == resource.data.doctorId);
-
-      // Prevent deletion of appointments (optional, for safety)
-      allow delete: if false;
-    }
-
-    // Rules for the 'doctors' subcollection under 'users'
+    // Doctors subcollection under users
     match /users/{userId}/doctors/{doctorId} {
-      // Allow authenticated users to read doctor profiles
-      allow read: if request.auth != null && resource.data.role == "doctor";
+      // Allow reads for all
+      allow read: if true;
+
+      // Only admins can write doctor profiles
+      allow write: if isAdmin();
+    }
+
+    // Appointments collection
+    match /appointments/{appointmentId} {
+      // Allow reads for all
+      allow read: if true;
+
+      // Allow creation if authenticated and patientId matches, or admin
+      allow create: if (isSignedIn() && request.resource.data.patientId == request.auth.uid) || isAdmin();
+
+      // Allow update if authenticated and patient/doctor matches,
+      // and patientId/doctorId are not changed, or admin
+      allow update: if isAdmin() || (
+        isSignedIn() &&
+        (request.auth.uid == resource.data.patientId || request.auth.uid == resource.data.doctorId) &&
+        request.resource.data.patientId == resource.data.patientId &&
+        request.resource.data.doctorId == resource.data.doctorId
+      );
+
+      // Allow delete for admins only
+      allow delete: if isAdmin();
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow write: if (isSignedIn() && request.auth.uid == request.resource.data.userId) || isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }

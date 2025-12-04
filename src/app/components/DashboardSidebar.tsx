@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import '../../i18n/i18n';
+import '@i18n';
 import { useSessionStore } from '@/store/sessionStore';
 import { Bars3Icon, XMarkIcon, PowerIcon, BellIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
@@ -34,25 +34,29 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
     return () => unsubscribe();
   }, [user, role]);
 
-  // Add Notifications menu item
-  const enhancedNavItems = [
-    ...navItems.map(item => ({
-      ...item,
-      name: t(item.name)
-    })),
-    {
-      name: t('notifications'),
-      href: '/dashboard/notifications',
-      icon: (
-        <span className="relative">
-          <BellIcon className="h-6 w-6" />
-          {hasNewNotifications && (
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
-          )}
-        </span>
-      ),
-    },
-  ];
+  // Translate incoming nav items; only auto-append Notifications for non-admin sections
+  const isAdminSection = pathname.startsWith('/admin');
+  const baseItems = navItems.map(item => ({
+    ...item,
+    name: t(item.name)
+  }));
+  const enhancedNavItems = isAdminSection
+    ? baseItems
+    : [
+        ...baseItems,
+        {
+          name: t('notifications'),
+          href: '/dashboard/notifications',
+          icon: (
+            <span className="relative">
+              <BellIcon className="h-6 w-6" />
+              {hasNewNotifications && (
+                <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
+              )}
+            </span>
+          ),
+        },
+      ];
 
   return (
     <>

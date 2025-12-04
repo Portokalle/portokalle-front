@@ -279,4 +279,16 @@
   "registrationSuccessful": "Regjistrimi u krye me sukses!",
   "redirectToLoginShortly": "Do të ridrejtoheni në faqen e kyçjes së shpejtë.",
   "redirecting": "Duke ridrejtuar..."
+  ,
+  "adminDashboard": "Paneli i administratorit",
+  "mostVisitedDoctors": "Mjekët më të vizituar",
+  "mostRequestedDoctors": "Mjekët më të kërkuar",
+  "noData": "Nuk ka të dhëna",
+  "noRecordsFound": "Nuk u gjetën të dhëna.",
+  "previous": "I mëparshmi",
+  "nextPagination": "Tjetri",
+  "pageOf": "Faqe {{page}} nga {{totalPages}}",
+  "adminNotificationsPlaceholder": "Njoftimet e administratorit do të shfaqen këtu.",
+  "users": "Përdorues",
+  "stats": "Statistika"
 }
