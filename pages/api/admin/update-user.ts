@@ -8,10 +8,15 @@ import admin from 'firebase-admin';
 if (!admin.apps.length) {
   let serviceAccount;
   try {
-    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
-  } catch {
-    console.error('FIREBASE_SERVICE_ACCOUNT env is not valid JSON.');
-    throw new Error('FIREBASE_SERVICE_ACCOUNT env is not valid JSON.');
+    const envVar = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!envVar) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
+    }
+    serviceAccount = JSON.parse(envVar);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : 'FIREBASE_SERVICE_ACCOUNT env is not valid JSON.';
+    console.error(message);
+    throw new Error(message);
   }
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
