@@ -279,4 +279,16 @@
   "registrationSuccessful": "Registration Successful!",
   "redirectToLoginShortly": "You will be redirected to the login page shortly.",
   "redirecting": "Redirecting..."
+  ,
+  "adminDashboard": "Admin Dashboard",
+  "mostVisitedDoctors": "Most visited doctors",
+  "mostRequestedDoctors": "Most requested doctors",
+  "noData": "No data",
+  "noRecordsFound": "No records found.",
+  "previous": "Previous",
+  "nextPagination": "Next",
+  "pageOf": "Page {{page}} of {{totalPages}}",
+  "adminNotificationsPlaceholder": "Admin notifications will appear here. We can reuse the existing notifications component or tailor an admin-specific feed.",
+  "users": "Users",
+  "stats": "Stats"
 }

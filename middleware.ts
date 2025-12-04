@@ -12,14 +12,20 @@ export function middleware(req: NextRequest) {
   const idleMs = 30 * 60 * 1000; // 30 minutes
 
   // Redirect authenticated users away from auth pages
+  // Admins should land on /admin, others on /dashboard
   // Require both auth token AND role cookie to reduce false positives from stale tokens
   if (hasSession && role && (url.pathname === '/login' || url.pathname === '/register')) {
-    url.pathname = '/dashboard';
+    url.pathname = role === 'admin' ? '/admin' : '/dashboard';
     return NextResponse.redirect(url);
   }
 
   // Protect dashboard routes
   if (url.pathname.startsWith('/dashboard')) {
+    // If admin tries to access dashboard, redirect them to admin home
+    if (hasSession && role === 'admin') {
+      url.pathname = '/admin';
+      return NextResponse.redirect(url);
+    }
     // Enforce idle timeout on server side if we have a timestamp
     if (hasSession && lastActivity && now - lastActivity > idleMs) {
       url.pathname = '/login';
@@ -59,6 +65,19 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // Protect admin routes: require role=admin
+  if (url.pathname.startsWith('/admin')) {
+    if (!hasSession) {
+      url.pathname = '/login';
+      url.searchParams.set('from', req.nextUrl.pathname);
+      return NextResponse.redirect(url);
+    }
+    if (role !== 'admin') {
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Pass language header for SSR
   const lang = req.cookies.get('language')?.value || 'en';
   const res = NextResponse.next();
@@ -72,5 +91,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/login', '/register'],
+  matcher: ['/dashboard/:path*', '/admin/:path*', '/login', '/register'],
 };

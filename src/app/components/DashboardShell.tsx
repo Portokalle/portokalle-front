@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import type { ReactElement } from 'react';
+import { useState, useEffect, useRef, type ReactElement } from 'react';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Bars3Icon,
@@ -12,25 +12,21 @@ import {
   CalendarIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
-import Image from 'next/image';
-import { useInitializeAppointments } from '../../store/appointmentStore';
-import { useDI } from '@/context/DIContext';
+import DashboardSidebar from './DashboardSidebar';
 import { useAuth } from '@/context/AuthContext';
+import { useDI } from '@/context/DIContext';
+import { useInitializeAppointments } from '@/store/appointmentStore';
 import { getNavigationPaths, NavigationKey } from '@/store/navigationStore';
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
-import DashboardSidebar from '../components/DashboardSidebar';
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+type NavItem = { key: NavigationKey; name: string; href: string };
+
+export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-  
 
   const { role, loading, isAuthenticated, user } = useAuth();
-  // Use DI context for Clean Architecture
   const { fetchAppointmentsUseCase } = useDI();
-  // Only call initializeAppointments when authenticated and role/user available
   const initializeAppointments = useInitializeAppointments((userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor));
-  // Prevent infinite loop: only initialize once when role becomes available
   const initializedRef = useRef(false);
   useEffect(() => {
     if (!initializedRef.current && isAuthenticated && role && user && initializeAppointments) {
@@ -40,38 +36,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [isAuthenticated, role, user, initializeAppointments]);
 
-  // Service Worker Registration
+  // Mobile SW registration, safe on client
   useEffect(() => {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js');
+      navigator.serviceWorker.register('/service-worker.js').catch(() => {});
     }
   }, []);
 
-  const nav = useNavigationCoordinator();
-  // Redirect if not authenticated after loading completes (via coordinator)
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      // Pass the actual current path only; omit fallback so we don't always tag '/dashboard'
-  nav.toLogin(pathname ?? undefined);
-    }
-  }, [loading, isAuthenticated, pathname, nav]);
-
-  // Show loading spinner while checking authentication
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="loading loading-spinner loading-lg"></div>
-      </div>
-    );
-  }
-
-  // If not authenticated return null (router will have navigated)
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  // If authenticated but role still loading show spinner
-  if (!role) {
+  // Loading guard (keeps parity with dashboard experience)
+  if (loading || !isAuthenticated || !role) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="loading loading-spinner loading-lg" />
@@ -79,9 +52,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  // Use admin-specific navigation when inside /admin, otherwise role-based defaults
+  // Compute role-based or custom admin nav
   const isAdminSection = pathname?.startsWith('/admin');
-  const navPaths = isAdminSection
+  const navPaths: NavItem[] = isAdminSection
     ? [
         { key: NavigationKey.Dashboard, name: 'dashboard', href: '/admin' },
         { key: NavigationKey.Appointments, name: 'users', href: '/admin/users' },
@@ -89,7 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { key: NavigationKey.Profile, name: 'stats', href: '/admin/stats' },
       ]
     : getNavigationPaths(role);
-  // Icon lookup for compact mapping instead of switch
+
   const iconMap: Record<NavigationKey, ReactElement> = {
     [NavigationKey.Dashboard]: <HomeIcon className="h-6 w-6" />,
     [NavigationKey.Appointments]: <ClipboardIcon className="h-6 w-6" />,
@@ -98,11 +71,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     [NavigationKey.Calendar]: <CalendarIcon className="h-6 w-6" />,
     [NavigationKey.NewAppointment]: <PlusIcon className="h-6 w-6" />,
   };
-
   const navItems = navPaths.map((item) => ({ ...item, icon: iconMap[item.key] }));
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
+    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50 font-app">
       <DashboardSidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -140,9 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 style={{ maxHeight: '2.5rem' }}
               />
             </div>
-            <div className="flex items-center gap-2" style={{ height: '3rem' }}>
-              {/* Maintain height */}
-            </div>
+            <div className="flex items-center gap-2" style={{ height: '3rem' }} />
           </div>
         </header>
         <main className="p-4">{children}</main>

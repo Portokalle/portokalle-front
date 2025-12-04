@@ -12,12 +12,17 @@ export function middleware(req: NextRequest) {
 
   // Redirect authenticated users away from auth pages
   if (hasSession && (url.pathname === '/login' || url.pathname === '/register')) {
-    url.pathname = '/dashboard';
+    url.pathname = role === 'admin' ? '/admin' : '/dashboard';
     return NextResponse.redirect(url);
   }
 
   // Protect dashboard routes
   if (url.pathname.startsWith('/dashboard')) {
+    // Redirect admins away from dashboard to admin area
+    if (hasSession && role === 'admin') {
+      url.pathname = '/admin';
+      return NextResponse.redirect(url);
+    }
     // Enforce idle timeout on server side if we have a timestamp
     if (hasSession && lastActivity && now - lastActivity > idleMs) {
       url.pathname = '/login';
