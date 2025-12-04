@@ -1,17 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
-import serviceAccount from '../../../portokalle-b76b9-firebase-adminsdk-fbsvc-801b17ac0b.json';
 
-// Initialize Admin SDK once
+// ------------------------
+// FIREBASE ADMIN INIT
+// ------------------------
+// Initialize Admin SDK once using FIREBASE_SERVICE_ACCOUNT environment variable
 if (!admin.apps.length) {
+  let serviceAccount;
   try {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-    });
-  } catch (e) {
-    console.error('Failed to initialize Firebase Admin SDK', e);
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT as string);
+  } catch {
+    console.error('FIREBASE_SERVICE_ACCOUNT env is not valid JSON.');
+    throw new Error('FIREBASE_SERVICE_ACCOUNT env is not valid JSON.');
   }
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
+// ------------------------
 
 type UserFields = {
   name?: string;
