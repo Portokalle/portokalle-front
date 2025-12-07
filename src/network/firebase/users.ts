@@ -4,7 +4,7 @@ import { db } from '@/config/firebaseconfig';
 import { FirestoreCollections } from '@/models/FirestoreConstants';
 import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, limit, startAfter, getCountFromServer, updateDoc, QueryDocumentSnapshot } from 'firebase/firestore';
 
-export async function fetchUsers(): Promise<(User & { name?: string; surname?: string })[]> {
+export async function fetchUsers(): Promise<(User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' })[]> {
   const usersCol = collection(db, FirestoreCollections.Users);
   const snap = await getDocs(usersCol);
   return snap.docs.map((d) => {
@@ -18,13 +18,14 @@ export async function fetchUsers(): Promise<(User & { name?: string; surname?: s
       ...base,
       name: (data.name as string) || '',
       surname: (data.surname as string) || '',
-    } as User & { name?: string; surname?: string };
+      approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
+    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' };
     return extended;
   });
 }
 
 export type UsersPage = {
-  items: (User & { name?: string; surname?: string })[];
+  items: (User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' })[];
   total: number;
   nextCursor?: QueryDocumentSnapshot; // Firestore DocumentSnapshot for startAfter
 };
@@ -49,14 +50,15 @@ export async function fetchUsersPage(pageSize: number, cursor?: QueryDocumentSna
       ...base,
       name: (data.name as string) || '',
       surname: (data.surname as string) || '',
-    } as User & { name?: string; surname?: string };
+      approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
+    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' };
     return extended;
   });
   const nextCursor = snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : undefined;
   return { items, total: countSnap.data().count, nextCursor };
 }
 
-export async function fetchUserById(id: string): Promise<User | null> {
+export async function fetchUserById(id: string): Promise<(User & { approvalStatus?: 'pending' | 'approved' }) | null> {
   const ref = doc(db, FirestoreCollections.Users, id);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
@@ -65,7 +67,8 @@ export async function fetchUserById(id: string): Promise<User | null> {
     id,
     email: (data.email as string) || '',
     role: (data.role as UserRole) || UserRole.Patient,
-  } as User;
+    approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
+  } as User & { approvalStatus?: 'pending' | 'approved' };
 }
 
 export async function fetchDoctorById(id: string): Promise<(User & { name?: string; surname?: string; specialization?: string; bio?: string }) | null> {

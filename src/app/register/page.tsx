@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../config/firebaseconfig';
 import Link from 'next/link';
 import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
@@ -68,14 +68,34 @@ function RegisterPageInner() {
             const user = userCredential.user;
 
             // Save extra user info in Firestore
+            const isDoctor = formData.role === 'doctor';
             await setDoc(doc(db, 'users', user.uid), {
                 name: formData.name,
                 surname: formData.surname,
                 phoneNumber: formData.phone,
                 email: formData.email,
                 role: formData.role,
+                ...(isDoctor ? { approvalStatus: 'pending' } : {}),
                 createdAt: new Date().toISOString(),
             });
+
+            // Notify admin about new doctor registration
+            if (isDoctor) {
+                try {
+                    await addDoc(collection(db, 'notifications'), {
+                        type: 'doctor_registration',
+                        userId: user.uid,
+                        name: formData.name,
+                        surname: formData.surname,
+                        email: formData.email,
+                        createdAt: serverTimestamp(),
+                        status: 'pending',
+                    });
+                } catch (e) {
+                    // Non-blocking: registration succeeds even if notification write fails
+                    console.warn('Failed to create admin notification for doctor registration', e);
+                }
+            }
 
             setShowModal(true);
             setTimeout(() => {

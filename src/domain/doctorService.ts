@@ -6,6 +6,8 @@ export async function getDoctorById(doctorId: string): Promise<Doctor | null> {
     if (!snapshot.exists()) return null;
     const data = snapshot.data();
     if (data[DoctorFields.Role] !== DoctorFields.RoleDoctor) return null;
+    // Hide non-approved doctor profiles from patient view
+    if (data.approvalStatus && data.approvalStatus !== 'approved') return null;
     return {
       id: doctorId,
       name: data[DoctorFields.Name] || "",
@@ -56,8 +58,14 @@ export async function fetchDoctors(searchTerm: string, searchType: SearchType): 
     } else {
       filtered = doctors;
     }
-    // Only return doctors with complete profiles
-    return filtered.filter(isProfileComplete);
+    // Only return doctors with complete profiles and approved status
+    const complete = filtered.filter(isProfileComplete);
+    const approvedOnly = complete.filter((doctor) => {
+      const d = snapshot.docs.find((s) => s.id === doctor.id)?.data();
+      const status = d?.approvalStatus as 'pending' | 'approved' | undefined;
+      return status === 'approved' || status === undefined; // default to showing if field missing for legacy
+    });
+    return approvedOnly;
   } catch {
     throw new Error("Failed to fetch doctors");
   }

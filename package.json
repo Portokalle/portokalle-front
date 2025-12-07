@@ -8,7 +8,8 @@
     "build:prod": "env-cmd -f .env.production next build",
     "start:prod": "env-cmd -f .env.production next start",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "backfill:approval": "env-cmd -f .env.local node scripts/backfill-approvalStatus.js"
   },
   "dependencies": {
     "@100mslive/react-sdk": "^0.10.35",
@@ -59,7 +60,8 @@
     "eslint-config-next": "15.2.3",
     "knip": "^5.61.2",
     "postcss": "^8.4.24",
-    "typescript": "^5"
+    "typescript": "^5",
+    "ts-node": "^10.9.2"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import '@/i18n/i18n';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { login } from '@/domain/authService';
 import { testFirebaseConnection } from '@/domain/firebaseTest';
@@ -189,10 +189,13 @@ function LoginPageContent() {
 }
 
 export default function LoginPage() {
+  const pathname = usePathname();
   return (
     <GoogleReCaptchaProvider
       reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
       scriptProps={{ async: true, appendTo: "head" }}
+      // Force re-mount on route changes to avoid stuck loading cases
+      key={pathname}
     >
       <Suspense fallback={<div>Loading...</div>}>
         <LoginPageContent />

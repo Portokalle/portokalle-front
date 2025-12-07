@@ -12,6 +12,7 @@ type TableUser = {
   name?: string;
   surname?: string;
   email?: string;
+  approvalStatus?: 'pending' | 'approved';
 };
 
 export function UsersTable() {
@@ -33,7 +34,20 @@ export function UsersTable() {
   const columns: Column<TableUser>[] = useMemo(() => ([
     { key: 'name', header: t('name') },
     { key: 'surname', header: t('surname') },
-    { key: 'role', header: t('role'), render: (u: TableUser) => <span className="capitalize">{String(u.role)}</span> },
+    {
+      key: 'role',
+      header: t('role'),
+      render: (u: TableUser) => (
+        <div className="flex items-center gap-2">
+          <span className="capitalize">{String(u.role)}</span>
+          {String(u.role).toLowerCase() === 'doctor' && u.approvalStatus === 'pending' && (
+            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700">
+              {t('pendingApproval')}
+            </span>
+          )}
+        </div>
+      ),
+    },
   ]), [t]);
 
   const actions: RowAction<TableUser>[] = useMemo(() => ([
