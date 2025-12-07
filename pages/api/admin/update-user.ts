@@ -2,8 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
 import { FirestoreCollections } from '@/config/FirestoreCollections';
 
-// Initialize Admin SDK once
+// ------------------------
+// FIREBASE ADMIN INIT
+// ------------------------
+// Initialize Admin SDK once using FIREBASE_SERVICE_ACCOUNT environment variable
 if (!admin.apps.length) {
+  let serviceAccount;
   try {
     const svcEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (!svcEnv) throw new Error('FIREBASE_SERVICE_ACCOUNT env is not set');
@@ -11,10 +15,21 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(svc),
     });
+    const envVar = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (!envVar) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
+    }
+    serviceAccount = JSON.parse(envVar);
   } catch (e) {
-    console.error('Failed to initialize Firebase Admin SDK', e);
+    const message = e instanceof Error ? e.message : 'FIREBASE_SERVICE_ACCOUNT env is not valid JSON.';
+    console.error(message);
+    throw new Error(message);
   }
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
+// ------------------------
 
 type UserFields = {
   name?: string;
