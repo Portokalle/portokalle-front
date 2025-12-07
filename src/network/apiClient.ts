@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { auth } from '@/config/firebaseconfig';
 
 export async function apiClient<T = unknown>(
   url: string,
@@ -17,6 +18,12 @@ export async function apiClient<T = unknown>(
       data: body,
       validateStatus: () => true,
     };
+    // Attach Firebase ID token when available
+    const user = auth.currentUser;
+    if (user) {
+      const token = await user.getIdToken();
+      config.headers = { ...(config.headers || {}), Authorization: `Bearer ${token}` };
+    }
     const response = await axios<T>(config);
     return {
       data: response.data,

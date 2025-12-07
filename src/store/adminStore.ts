@@ -3,7 +3,7 @@ import type { User } from '@/domain/entities/User';
 import { UserRole } from '@/domain/entities/UserRole';
 import type { QueryDocumentSnapshot } from 'firebase/firestore';
 import { getAllUsers, resetUserPassword, deleteUserAccount, createAdminUser, getUsersPage, getDoctorProfile, getUserById } from '@/domain/users';
-import { auth } from '@/config/firebaseconfig';
+import { apiClient } from '@/network/apiClient';
 
 type EditableUser = User & {
   // optional base profile fields (may be absent in base User entity)
@@ -13,6 +13,7 @@ type EditableUser = User & {
   specialization?: string;
   bio?: string;
   specializations?: string[];
+  approvalStatus?: 'pending' | 'approved';
 };
 
 interface AdminState {
@@ -34,6 +35,7 @@ interface AdminState {
   loadSelectedDetails: () => Promise<void>;
   updateSelected: (payload: { name?: string; surname?: string; role?: User['role']; email?: string }) => Promise<void>;
   updateDoctorProfile: (payload: { specialization?: string; bio?: string; specializations?: string[] }) => Promise<void>;
+  approveDoctor: (id: string) => Promise<void>;
   resetPassword: (id: string) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
   createAdmin: (payload: { name: string; surname: string; email: string; password: string }) => Promise<void>;
@@ -54,8 +56,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const users = await getAllUsers();
-      // Coerce base users into EditableUser shape (name/surname may be populated later)
-      const editable = users.map(u => ({ ...u })) as EditableUser[];
+      // Coerce base users into EditableUser shape and carry approvalStatus if present
+      const editable = users.map(u => ({
+        ...u,
+        approvalStatus: (u as unknown as { approvalStatus?: 'pending' | 'approved' }).approvalStatus,
+      })) as EditableUser[];
       set({ users: editable, total: editable.length });
     } catch (e) {
       set({ error: e instanceof Error ? e.message : 'Failed to load users' });
@@ -74,7 +79,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       if (res.nextCursor && nextCursors[page] !== res.nextCursor) {
         nextCursors[page] = res.nextCursor;
       }
-      set({ users: res.items, total: res.total, page, cursors: nextCursors, searchQuery: '' });
+      const items = (res.items as EditableUser[]).map(u => ({
+        ...u,
+        approvalStatus: (u as unknown as { approvalStatus?: 'pending' | 'approved' }).approvalStatus,
+      }));
+      set({ users: items, total: res.total, page, cursors: nextCursors, searchQuery: '' });
     } catch (e) {
       set({ error: e instanceof Error ? e.message : 'Failed to load users' });
     } finally {
@@ -92,7 +101,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     try {
       // Fetch all users and filter client-side to cover global dataset
       const all = await getAllUsers();
-      const editable = all.map(u => ({ ...u })) as EditableUser[];
+      const editable = all.map(u => ({
+        ...u,
+        approvalStatus: (u as unknown as { approvalStatus?: 'pending' | 'approved' }).approvalStatus,
+      })) as EditableUser[];
       const filtered = editable.filter(u => {
         const hay = `${u.name ?? ''} ${u.surname ?? ''} ${u.email ?? ''} ${u.role ?? ''}`.toLowerCase();
         return hay.includes(q);
@@ -122,7 +134,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
           bio: mDoctor.bio,
           specializations: mDoctor.specializations,
         } : {};
-        const users = get().users.map(u => (u.id === id ? { ...u, ...(base ?? {}), ...doctorFields } : u));
+        const users = get().users.map(u => (u.id === id ? {
+          ...u,
+          ...(base ?? {}),
+          ...doctorFields,
+          approvalStatus: (base as unknown as { approvalStatus?: 'pending' | 'approved' })?.approvalStatus ?? u.approvalStatus,
+        } : u));
         set({ users });
       }
     } catch (e) {
@@ -135,16 +152,10 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     const id = get().selectedUserId; if (!id) return;
     set({ loading: true, error: null });
     try {
-      // Server-side admin update via API (attach ID token for admin verification)
-      const token = await auth.currentUser?.getIdToken();
-      await fetch('/api/admin/update-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        credentials: 'include',
-        body: JSON.stringify({ id, userFields: { ...payload } }),
-      }).then(async (r) => {
-        const j = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(j.error || 'Failed to update user');
+      // Server-side admin update via API; token attached automatically by apiClient
+      await apiClient.post('/api/admin/update-user', {
+        id,
+        userFields: { ...payload },
       });
       const users = get().users.map(u => (u.id === id ? { ...u, ...payload } : u));
       set({ users });
@@ -158,21 +169,27 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     const id = get().selectedUserId; if (!id) return;
     set({ loading: true, error: null });
     try {
-      // Server-side admin update via API (attach ID token for admin verification)
-      const token = await auth.currentUser?.getIdToken();
-      await fetch('/api/admin/update-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        credentials: 'include',
-        body: JSON.stringify({ id, doctorFields: { ...payload } }),
-      }).then(async (r) => {
-        const j = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(j.error || 'Failed to update doctor profile');
+      // Server-side admin update via API; token attached automatically by apiClient
+      await apiClient.post('/api/admin/update-user', {
+        id,
+        doctorFields: { ...payload },
       });
       const users = get().users.map(u => (u.id === id ? { ...u, ...payload } : u));
       set({ users });
     } catch (e) {
       set({ error: e instanceof Error ? e.message : 'Failed to update doctor profile' });
+    } finally {
+      set({ loading: false });
+    }
+  },
+  async approveDoctor(id) {
+    set({ loading: true, error: null });
+    try {
+      await apiClient.post('/api/admin/update-user', { id, approveDoctor: true });
+  const users = get().users.map(u => (u.id === id ? ({ ...u, approvalStatus: 'approved' } as EditableUser & { approvalStatus: 'approved' }) : u));
+      set({ users });
+    } catch (e) {
+      set({ error: e instanceof Error ? e.message : 'Failed to approve doctor' });
     } finally {
       set({ loading: false });
     }
