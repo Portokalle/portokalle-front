@@ -12,9 +12,6 @@ const ENV_PRODUCTION = 'production';
 function getServiceAccountFromEnv(): admin.ServiceAccount | null {
   const envJson = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!envJson) return null;
-// Initialize Admin SDK once using FIREBASE_SERVICE_ACCOUNT environment variable
-if (!admin.apps.length) {
-  let serviceAccount;
   try {
     const sa: Partial<admin.ServiceAccount> & { private_key?: string } = JSON.parse(envJson);
     if (typeof sa.private_key === 'string') {
@@ -24,15 +21,6 @@ if (!admin.apps.length) {
   } catch (e) {
     console.warn('FIREBASE_SERVICE_ACCOUNT env is invalid JSON.', e);
     return null;
-    const envVar = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (!envVar) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
-    }
-    serviceAccount = JSON.parse(envVar);
-  } catch (e) {
-    const message = e instanceof Error ? e.message : 'FIREBASE_SERVICE_ACCOUNT env is not valid JSON.';
-    console.error(message);
-    throw new Error(message);
   }
 }
 
@@ -88,7 +76,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const uid = decoded.uid;
 
     // Fetch user role from Firestore
-  const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
     let role = UserRole.Patient;
 
     if (userDoc.exists) {
