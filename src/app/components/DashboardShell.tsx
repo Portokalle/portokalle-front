@@ -6,12 +6,18 @@ import { usePathname } from 'next/navigation';
 import {
   Bars3Icon,
   XMarkIcon,
-  HomeIcon,
-  ClipboardIcon,
-  UserIcon,
-  CalendarIcon,
-  PlusIcon,
+  HomeIcon as HomeOutline,
+  ClipboardIcon as ClipboardOutline,
+  UserIcon as UserOutline,
+  CalendarIcon as CalendarOutline,
+  PlusIcon as PlusOutline,
 } from '@heroicons/react/24/outline';
+import {
+  HomeIcon as HomeSolid,
+  UsersIcon as UsersSolid,
+  BellIcon as BellSolid,
+  ChartBarIcon as ChartBarSolid,
+} from '@heroicons/react/24/solid';
 import DashboardSidebar from './DashboardSidebar';
 import { useAuth } from '@/context/AuthContext';
 import { useDI } from '@/context/DIContext';
@@ -63,14 +69,24 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       ]
     : getNavigationPaths(role);
 
-  const iconMap: Record<NavigationKey, ReactElement> = {
-    [NavigationKey.Dashboard]: <HomeIcon className="h-6 w-6" />,
-    [NavigationKey.Appointments]: <ClipboardIcon className="h-6 w-6" />,
-    [NavigationKey.AppointmentHistory]: <ClipboardIcon className="h-6 w-6" />,
-    [NavigationKey.Profile]: <UserIcon className="h-6 w-6" />,
-    [NavigationKey.Calendar]: <CalendarIcon className="h-6 w-6" />,
-    [NavigationKey.NewAppointment]: <PlusIcon className="h-6 w-6" />,
-  };
+  const iconMap: Record<NavigationKey, ReactElement> = isAdminSection
+    ? {
+        [NavigationKey.Dashboard]: <HomeSolid className="h-6 w-6" />,
+        [NavigationKey.Appointments]: <UsersSolid className="h-6 w-6" />,
+        [NavigationKey.AppointmentHistory]: <BellSolid className="h-6 w-6" />,
+        [NavigationKey.Profile]: <ChartBarSolid className="h-6 w-6" />,
+        // For admin section, we don't use Calendar/NewAppointment entries but keep defaults if present
+        [NavigationKey.Calendar]: <ChartBarSolid className="h-6 w-6" />,
+        [NavigationKey.NewAppointment]: <ChartBarSolid className="h-6 w-6" />,
+      }
+    : {
+        [NavigationKey.Dashboard]: <HomeOutline className="h-6 w-6" />,
+        [NavigationKey.Appointments]: <ClipboardOutline className="h-6 w-6" />,
+        [NavigationKey.AppointmentHistory]: <ClipboardOutline className="h-6 w-6" />,
+        [NavigationKey.Profile]: <UserOutline className="h-6 w-6" />,
+        [NavigationKey.Calendar]: <CalendarOutline className="h-6 w-6" />,
+        [NavigationKey.NewAppointment]: <PlusOutline className="h-6 w-6" />,
+      };
   const navItems = navPaths.map((item) => ({ ...item, icon: iconMap[item.key] }));
 
   return (
