@@ -52,7 +52,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   // Loading guard (keeps parity with dashboard experience)
   if (loading || !isAuthenticated || !role) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen bg-neutral-50">
         <div className="loading loading-spinner loading-lg" />
       </div>
     );
@@ -90,7 +90,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const navItems = navPaths.map((item) => ({ ...item, icon: iconMap[item.key] }));
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50 font-app">
+    <div className="min-h-screen flex flex-col md:flex-row bg-neutral-50 font-sans">
       <DashboardSidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -98,10 +98,10 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         pathname={pathname || ''}
       />
       {/* Mobile Top Bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow-md flex justify-center items-center px-4 py-4 relative">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/90 shadow-sm flex justify-center items-center px-6 py-4 rounded-b-2xl border-b border-neutral-200">
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="absolute left-4 text-orange-500 hover:text-orange-700"
+          className="absolute left-4 text-teal-600 hover:text-teal-800 transition-colors"
         >
           {sidebarOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
         </button>
@@ -110,28 +110,30 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           alt="logo"
           width={120}
           height={60}
-          className="w-auto h-auto"
-          style={{ maxHeight: '2rem' }}
+          className="w-auto h-auto max-h-8"
         />
       </div>
       {/* Main Content Area */}
-      <div className={`flex-grow transition-all duration-300 pt-16 md:pt-0 ${sidebarOpen && 'md:ml-64'} md:ml-16`}>
-        <header className="bg-white shadow-md hidden md:block">
-          <div className="flex items-center justify-center p-6 relative">
-            <div className="absolute left-1/2 transform -translate-x-1/2 max-w-[50%]">
+      <div className={`flex-grow transition-all duration-300 pt-20 md:pt-0 ${sidebarOpen && 'md:ml-64'} md:ml-20`}> 
+        <header className="bg-white/90 shadow-sm hidden md:block rounded-b-2xl border-b border-neutral-200">
+          <div className="flex items-center justify-center py-8 px-8 relative">
+            <div className="absolute left-1/2 -translate-x-1/2 max-w-[50%]">
               <Image
                 src="/img/logo.png"
                 alt="logo"
                 width={200}
                 height={100}
-                className="w-auto h-auto"
-                style={{ maxHeight: '2.5rem' }}
+                className="w-auto h-auto max-h-10"
               />
             </div>
-            <div className="flex items-center gap-2" style={{ height: '3rem' }} />
+            <div className="flex items-center gap-2 h-12" />
           </div>
         </header>
-        <main className="p-4">{children}</main>
+        <main className="p-6 md:p-10 max-w-5xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-10 min-h-[60vh] text-gray-800">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

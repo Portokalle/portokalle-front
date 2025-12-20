@@ -9,6 +9,8 @@
     "build:prod": "env-cmd -f .env.production next build",
     "build:prod:secure": "env-cmd -f .env.production next build && node tools/obfuscate-server.js",
     "start:prod": "env-cmd -f .env.production next start",
+    "start:prod:lowmem": "env-cmd -f .env.production NODE_OPTIONS=--max-old-space-size=512 next start",
+    "start:lowmem": "NODE_OPTIONS=--max-old-space-size=512 next start",
     "lint": "next lint",
     "start": "next start",
     "backfill:approval": "env-cmd -f .env.local node scripts/backfill-approvalStatus.js"
