@@ -4,7 +4,7 @@ import { UsersTable } from './components/UsersTable';
 import { UserSidepanel } from './components/UserSidepanel';
 import { StatsCards } from './components/StatsCards';
 import { ToastProvider } from './components/ToastProvider';
-import DashboardShell from '@/app/components/DashboardShell';
+import DashboardShell from '@/presentation/components/DashboardShell';
 import { useTranslation } from 'react-i18next';
 import '@i18n';
 

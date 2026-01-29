@@ -13,12 +13,12 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import { useInitializeAppointments } from '../../store/appointmentStore';
-import { useDI } from '@/context/DIContext';
-import { useAuth } from '@/context/AuthContext';
-import { getNavigationPaths, NavigationKey } from '@/store/navigationStore';
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
-import DashboardSidebar from '../components/DashboardSidebar';
+import { useInitializeAppointments } from '@/presentation/store/appointmentStore';
+import { useDI } from '@/presentation/context/DIContext';
+import { useAuth } from '@/presentation/context/AuthContext';
+import { getNavigationPaths, NavigationKey } from '@/presentation/store/navigationStore';
+import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
+import DashboardSidebar from '@/presentation/components/DashboardSidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -1,9 +1,9 @@
 'use client';
 
-import { useMyProfile } from "../../../hooks/useMyProfile";
-import Loader from "../../components/Loader";
-import MyProfileForm from '@/app/components/MyProfile/MyProfileForm';
-import PasswordResetSection from '@/app/components/MyProfile/PasswordResetSection';
+import { useMyProfile } from "@/presentation/hooks/useMyProfile";
+import Loader from "@/presentation/components/Loader";
+import MyProfileForm from '@/presentation/components/MyProfile/MyProfileForm';
+import PasswordResetSection from '@/presentation/components/MyProfile/PasswordResetSection';
 
 export default function MyProfile() {
   const {

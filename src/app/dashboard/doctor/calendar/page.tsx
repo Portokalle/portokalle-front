@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import RoleGuard from '../../../components/RoleGuard';
+import RoleGuard from '@/presentation/components/RoleGuard';
 import { UserRole } from '@/domain/entities/UserRole';
 import Calendar from '../Calendar';
-import Loader from '../../../components/Loader';
-import { useAuth } from '../../../../context/AuthContext';
-import { useAppointmentStore } from '../../../../store/appointmentStore';
+import Loader from '@/presentation/components/Loader';
+import { useAuth } from '@/presentation/context/AuthContext';
+import { useAppointmentStore } from '@/presentation/store/appointmentStore';
 import { Event as RBCEvent } from 'react-big-calendar';
-import { FetchAppointmentsUseCase } from '@/application/fetchAppointmentsUseCase';
+import { FetchAppointmentsUseCase } from '@/application/use-cases/fetchAppointmentsUseCase';
 import { FirebaseAppointmentRepository } from '@/infrastructure/repositories/FirebaseAppointmentRepository';
 
 export default function DoctorCalendarPage() {

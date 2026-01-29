@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '../../config/firebaseconfig';
+import { auth, db } from '@/infrastructure/firebase/firebaseconfig';
 import Link from 'next/link';
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
+import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from 'react-i18next';
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useAdminStore } from "@/store/adminStore";
+import { useAdminStore } from "@/presentation/store/adminStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "./ToastProvider";
 import { UserRole } from "@/domain/entities/UserRole";

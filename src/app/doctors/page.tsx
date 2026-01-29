@@ -1,8 +1,8 @@
 'use client';
 
-import HeroSection from '../components/heroSection';
-import NavBar from '../components/navBar';
-import FooterSection from '../components/footerSection';
+import HeroSection from '@/presentation/components/heroSection';
+import NavBar from '@/presentation/components/navBar';
+import FooterSection from '@/presentation/components/footerSection';
 import DoctorStatsSection from './DoctorStatsSection';
 import DoctorFeaturesSection from './DoctorFeaturesSection';
 import DoctorHowItWorksSection from './DoctorHowItWorksSection';

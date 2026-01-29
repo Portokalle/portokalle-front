@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RedirectingModal from '@/app/components/RedirectingModal';
-import { useAppointmentStore } from '@/store/appointmentStore';
-import { getAppointments } from '@/domain/appointmentService';
-import { useAuth } from '@/context/AuthContext';
-import { useVideoStore } from '@/store/videoStore';
-import RoleGuard from '@/app/components/RoleGuard';
-import { AppointmentsTable } from '@/app/components/appointment/SharedAppointmentsTable';
+import RedirectingModal from '@/presentation/components/RedirectingModal';
+import { useAppointmentStore } from '@/presentation/store/appointmentStore';
+import { getAppointments } from '@/infrastructure/services/appointmentService';
+import { useAuth } from '@/presentation/context/AuthContext';
+import { useVideoStore } from '@/presentation/store/videoStore';
+import RoleGuard from '@/presentation/components/RoleGuard';
+import { AppointmentsTable } from '@/presentation/components/appointment/SharedAppointmentsTable';
 import { appointmentRepository } from '@/infrastructure/appointmentRepository';
-import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/config/userRoles';
+import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/domain/constants/userRoles';
 
 
 function AppointmentsPage() {
@@ -34,7 +34,7 @@ function AppointmentsPage() {
   useEffect(() => {
     if (!user?.uid) return;
     // Use domain/application layer to fetch user role
-    // Example: import { fetchUserRoleUseCase } from '@/application/fetchUserRoleUseCase';
+    // Example: import { fetchUserRoleUseCase } from '@/application/use-cases/fetchUserRoleUseCase';
     // fetchUserRoleUseCase(user.uid).then(role => { /* update store or local state */ });
     // For now, remove direct store call
   }, [user]);
@@ -78,7 +78,7 @@ function AppointmentsPage() {
       let roomId = appointment.roomId;
       // If missing, generate and update
       if (!roomCode || !roomId) {
-        const { generateRoomCodeAndToken } = await import('@/domain/100msService');
+        const { generateRoomCodeAndToken } = await import('@/infrastructure/services/100msService');
         const data = await generateRoomCodeAndToken({
           user_id: user.uid,
           room_id: appointmentId,

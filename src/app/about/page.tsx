@@ -4,8 +4,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import Image from "next/image";
-import FooterSection from "../components/footerSection";
-import NavBar from "../components/navBar";
+import FooterSection from "@/presentation/components/footerSection";
+import NavBar from "@/presentation/components/navBar";
 
 export default function AboutPage() {
   const { t } = useTranslation();

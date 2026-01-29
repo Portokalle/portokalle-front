@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ClientProviders from "./ClientProviders";
-import { DIProvider } from '@/context/DIContext';
+import { DIProvider } from '@/presentation/context/DIContext';
 import Script from "next/script";
 import Analytics from "./analytics/Analytics";
 import { Suspense } from "react";

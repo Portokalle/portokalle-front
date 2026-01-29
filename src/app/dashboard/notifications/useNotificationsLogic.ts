@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { auth } from '../../../config/firebaseconfig';
-import { FetchAppointmentsUseCase } from '@/application/fetchAppointmentsUseCase';
+import { auth } from '@/infrastructure/firebase/firebaseconfig';
+import { FetchAppointmentsUseCase } from '@/application/use-cases/fetchAppointmentsUseCase';
 import { FirebaseAppointmentRepository } from '@/infrastructure/repositories/FirebaseAppointmentRepository';
-import { getUserRole, fetchAppointmentDetails, dismissNotification } from '@/domain/notificationService';
-import { updateAppointmentStatusAndNotify } from '@/domain/appointmentNotificationService';
-import { useAppointmentStore } from '../../../store/appointmentStore';
-import type { NavigationCoordinator } from '@/navigation/NavigationCoordinator';
+import { getUserRole, fetchAppointmentDetails, dismissNotification } from '@/infrastructure/services/notificationService';
+import { updateAppointmentStatusAndNotify } from '@/infrastructure/services/appointmentNotificationService';
+import { useAppointmentStore } from '@/presentation/store/appointmentStore';
+import type { NavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 
 export function useNotificationsLogic(nav: NavigationCoordinator) {
   const { appointments, loading: isLoading, error, fetchAppointments } = useAppointmentStore();

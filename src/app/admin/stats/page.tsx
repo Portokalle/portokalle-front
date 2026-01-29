@@ -1,7 +1,7 @@
 "use client";
 
 import { ToastProvider } from '../components/ToastProvider';
-import DashboardShell from '@/app/components/DashboardShell';
+import DashboardShell from '@/presentation/components/DashboardShell';
 import { StatsCards } from '../components/StatsCards';
 import { useTranslation } from 'react-i18next';
 import '@i18n';

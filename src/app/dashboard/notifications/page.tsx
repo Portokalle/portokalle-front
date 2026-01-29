@@ -1,6 +1,6 @@
 "use client";
 
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
+import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 import { useTranslation } from 'react-i18next';
 import Link from "next/link";
 import styles from "./notifications.module.css";

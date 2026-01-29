@@ -1,7 +1,7 @@
 "use client";
-import { useAdminStore } from '@/store/adminStore';
+import { useAdminStore } from '@/presentation/store/adminStore';
 import { useEffect, useMemo, useState } from 'react';
-import GenericTable, { Column, RowAction } from '@/app/components/GenericTable';
+import GenericTable, { Column, RowAction } from '@/presentation/components/GenericTable';
 import { useTranslation } from 'react-i18next';
 import '@i18n';
 import { UserRole } from '@/domain/entities/UserRole';

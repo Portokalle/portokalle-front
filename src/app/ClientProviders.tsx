@@ -1,8 +1,8 @@
 'use client';
 
-import { AuthProvider } from "../context/AuthContext";
-import { useSessionActivity } from "@/hooks/useSessionActivity";
-import { LogoutSessionUseCase } from '@/application/logoutSessionUseCase';
+import { AuthProvider } from "@/presentation/context/AuthContext";
+import { useSessionActivity } from "@/presentation/hooks/useSessionActivity";
+import { LogoutSessionUseCase } from '@/application/use-cases/logoutSessionUseCase';
 import { FirebaseSessionRepository } from '@/infrastructure/repositories/FirebaseSessionRepository';
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {

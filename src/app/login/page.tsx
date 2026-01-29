@@ -6,8 +6,8 @@ import '@/i18n/i18n';
 import Link from 'next/link';
 import { useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { login } from '@/domain/authService';
-import { testFirebaseConnection } from '@/domain/firebaseTest';
+import { login } from '@/infrastructure/services/authService';
+import { testFirebaseConnection } from '@/infrastructure/services/firebaseTest';
 import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 function LoginPageContent() {
