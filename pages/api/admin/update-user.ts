@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
-import { FirestoreCollections } from '@/config/FirestoreCollections';
+import { FirestoreCollections } from '@/infrastructure/firebase/FirestoreCollections';
 
 // ------------------------
 // FIREBASE ADMIN INIT

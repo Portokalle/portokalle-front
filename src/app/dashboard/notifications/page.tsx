@@ -1,10 +1,11 @@
 "use client";
 
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
+import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 import { useTranslation } from 'react-i18next';
 import Link from "next/link";
 import styles from "./notifications.module.css";
-import { useNotificationsLogic } from './useNotificationsLogic';
+import { useNotificationsLogic } from '@/presentation/hooks/useNotificationsLogic';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 
 function NotificationsPage() {
@@ -95,7 +96,10 @@ function NotificationsPage() {
                     ) : (
                       appointment.status === 'rejected' && (
                         <Link href="/dashboard/new-appointment">
-                          <button className="transition-all duration-150 ease-in-out bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 w-28">
+                          <button
+                            className="transition-all duration-150 ease-in-out bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 w-28"
+                            onClick={() => trackEvent('postpone_appointment', { appointment_id: appointment.id, source: 'notifications' })}
+                          >
                             {t('reschedule', 'Reschedule')}
                           </button>
                         </Link>
@@ -158,7 +162,10 @@ function NotificationsPage() {
               ) : (
                 appointment.status === 'rejected' && (
                   <Link href="/dashboard/new-appointment">
-                    <button className="transition-all duration-150 ease-in-out bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 w-28">
+                    <button
+                      className="transition-all duration-150 ease-in-out bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 w-28"
+                      onClick={() => trackEvent('postpone_appointment', { appointment_id: appointment.id, source: 'notifications' })}
+                    >
                       Reschedule
                     </button>
                   </Link>

@@ -1,29 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import RoleGuard from '../../../components/RoleGuard';
+import RoleGuard from '@/presentation/components/RoleGuard';
 import { UserRole } from '@/domain/entities/UserRole';
-import Calendar from '../Calendar';
-import Loader from '../../../components/Loader';
-import { useAuth } from '../../../../context/AuthContext';
-import { useAppointmentStore } from '../../../../store/appointmentStore';
+import Calendar from '@/presentation/components/dashboard/DoctorCalendar';
+import Loader from '@/presentation/components/Loader';
+import { useAuth } from '@/presentation/context/AuthContext';
+import { useAppointmentStore } from '@/presentation/store/appointmentStore';
 import { Event as RBCEvent } from 'react-big-calendar';
-import { FetchAppointmentsUseCase } from '@/application/fetchAppointmentsUseCase';
-import { FirebaseAppointmentRepository } from '@/infrastructure/repositories/FirebaseAppointmentRepository';
+import { useDI } from '@/presentation/context/DIContext';
 
 export default function DoctorCalendarPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { appointments, fetchAppointments, loading } = useAppointmentStore();
   const [events, setEvents] = useState<RBCEvent[]>([]);
-
-  // Dependency injection for Clean Architecture
-  // Memoize use case to avoid recreating on every render
-  const fetchAppointmentsUseCase = React.useMemo(() => {
-    const appointmentRepo = new FirebaseAppointmentRepository();
-    return new FetchAppointmentsUseCase(appointmentRepo);
-  }, []);
+  const { fetchAppointmentsUseCase } = useDI();
 
   useEffect(() => {
     if (!user?.uid) return;

@@ -1,13 +1,13 @@
 'use client';
 
-import HeroSection from '../components/heroSection';
-import NavBar from '../components/navBar';
+import HeroSection from '@/presentation/components/heroSection';
+import NavBar from '@/presentation/components/navBar';
 
 
-import IndividualBenefitsSection from './IndividualBenefitsSection';
-import IndividualHowItWorksSection from './IndividualHowItWorksSection';
-import IndividualCtaSection from './IndividualCtaSection';
-import FooterSection from '../components/footerSection';
+import IndividualBenefitsSection from '@/presentation/components/individuals/IndividualBenefitsSection';
+import IndividualHowItWorksSection from '@/presentation/components/individuals/IndividualHowItWorksSection';
+import IndividualCtaSection from '@/presentation/components/individuals/IndividualCtaSection';
+import FooterSection from '@/presentation/components/footerSection';
 
 export default function IndividualsPage() {
   return (

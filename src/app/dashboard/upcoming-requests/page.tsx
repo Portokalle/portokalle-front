@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useNavigationCoordinator } from '@/navigation/NavigationCoordinator';
-import { useDI } from '@/context/DIContext';
-import { useAuth } from '@/context/AuthContext';
+import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
+import { useDI } from '@/presentation/context/DIContext';
+import { useAuth } from '@/presentation/context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 import type { Appointment } from '@/domain/entities/Appointment';

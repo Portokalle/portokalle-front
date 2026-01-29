@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import admin from 'firebase-admin';
 import { UserRole } from '@/domain/entities/UserRole';
-import { setSecurityHeaders } from '../../../src/config/httpHeaders';
+import { setSecurityHeaders } from '@/infrastructure/http/httpHeaders';
 
 const THIRTY_MIN = 30 * 60; // seconds
 const ENV_PRODUCTION = 'production';

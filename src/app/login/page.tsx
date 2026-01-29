@@ -6,9 +6,9 @@ import '@/i18n/i18n';
 import Link from 'next/link';
 import { useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { login } from '@/domain/authService';
-import { testFirebaseConnection } from '@/domain/firebaseTest';
 import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
+import { useDI } from '@/presentation/context/DIContext';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 function LoginPageContent() {
   const { t } = useTranslation();
@@ -19,16 +19,17 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const { executeRecaptcha } = useGoogleReCaptcha();
   const isRecaptchaReady = !!executeRecaptcha;
+  const { loginUseCase, authGateway } = useDI();
 
   // Get the 'from' parameter to redirect after login
   const fromPath = searchParams?.get('from') || '/dashboard';
 
   // Test Firebase connectivity on component mount, but don't block login if it fails
   useEffect(() => {
-    testFirebaseConnection().catch(() => {
+    authGateway.testConnection().catch(() => {
   setErrorMsg(t('firebaseWarning'));
     });
-  }, [t]);
+  }, [t, authGateway]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,7 +57,8 @@ function LoginPageContent() {
         return;
       }
       // Only proceed with login if reCAPTCHA passes
-      await login(email, password);
+      await loginUseCase.execute(email, password);
+      trackEvent('login', { method: 'email', from: fromPath });
       // Verify if the 'loggedIn' cookie is set (HttpOnly session is not visible to JS)
       if (!document.cookie.includes('loggedIn=')) {
   setErrorMsg(t('authTokenWarning'));

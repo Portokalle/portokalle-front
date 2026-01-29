@@ -1,0 +1,58 @@
+import type { User } from '@/domain/entities/User';
+import { UserRole } from '@/domain/entities/UserRole';
+import { fetchUsers, fetchUserById, fetchDoctorById, fetchUsersPage, UsersPage, upsertUser, updateDoctorProfile } from '@/infrastructure/firebase/users';
+import type { PaginationCursor } from '@/shared/types/PaginationCursor';
+import { apiCreateAdmin, apiResetPassword, apiDeleteUser } from '@/infrastructure/http/admin';
+import { fetchAppointmentsForUser, fetchAppointmentsForDoctor } from '@/infrastructure/firebase/appointments';
+
+export async function getAllUsers(): Promise<User[]> {
+  return fetchUsers();
+}
+
+export async function getUsersPage(pageSize: number, cursor?: PaginationCursor): Promise<UsersPage> {
+  return fetchUsersPage(pageSize, cursor);
+}
+
+export async function getUserById(firebaseId: string): Promise<User | null> {
+  return fetchUserById(firebaseId);
+}
+
+export async function getDoctorProfile(firebaseId: string): Promise<(User & { name?: string; surname?: string; specialization?: string; bio?: string }) | null> {
+  return fetchDoctorById(firebaseId);
+}
+
+export async function getUserAppointmentCount(userId: string): Promise<number> {
+  const apps = await fetchAppointmentsForUser(userId);
+  return apps.length;
+}
+
+export async function getDoctorAppointmentCount(doctorId: string): Promise<number> {
+  const apps = await fetchAppointmentsForDoctor(doctorId);
+  return apps.length;
+}
+
+export async function createAdminUser(payload: { name: string; surname: string; email: string; password: string }): Promise<User> {
+  const res = await apiCreateAdmin(payload);
+  return { id: res.id, email: payload.email, role: UserRole.Admin } as User;
+}
+
+export async function resetUserPassword(userId: string): Promise<void> {
+  await apiResetPassword(userId);
+}
+
+export async function generatePasswordResetLink(userId: string): Promise<string | null> {
+  const res = await apiResetPassword(userId);
+  return res.resetLink ?? null;
+}
+
+export async function deleteUserAccount(userId: string): Promise<void> {
+  await apiDeleteUser(userId);
+}
+
+export async function updateUserFields(user: Partial<User> & { id: string } & Record<string, unknown>): Promise<void> {
+  await upsertUser(user);
+}
+
+export async function updateDoctorFields(id: string, fields: { specialization?: string; bio?: string; specializations?: string[] }): Promise<void> {
+  await updateDoctorProfile(id, fields);
+}

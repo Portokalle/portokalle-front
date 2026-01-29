@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import RedirectingModal from '@/app/components/RedirectingModal';
-import { useAppointmentStore } from '@/store/appointmentStore';
-import { getAppointments } from '@/domain/appointmentService';
-import { useAuth } from '@/context/AuthContext';
-import { useVideoStore } from '@/store/videoStore';
-import RoleGuard from '@/app/components/RoleGuard';
-import { AppointmentsTable } from '@/app/components/appointment/SharedAppointmentsTable';
-import { appointmentRepository } from '@/infrastructure/appointmentRepository';
-import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/config/userRoles';
+import RedirectingModal from '@/presentation/components/RedirectingModal';
+import { useAppointmentStore } from '@/presentation/store/appointmentStore';
+import { useAuth } from '@/presentation/context/AuthContext';
+import { useVideoStore } from '@/presentation/store/videoStore';
+import RoleGuard from '@/presentation/components/RoleGuard';
+import { AppointmentsTable } from '@/presentation/components/appointment/SharedAppointmentsTable';
+import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/domain/constants/userRoles';
+import { useDI } from '@/presentation/context/DIContext';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 
 function AppointmentsPage() {
@@ -24,6 +24,7 @@ function AppointmentsPage() {
     verifyAndUpdatePayment,
   } = useAppointmentStore();
   const { setAuthStatus } = useVideoStore();
+  const { appointmentService, fetchAppointmentsUseCase, videoService, appointmentRepository } = useDI();
 
   // Sync auth status with store
   useEffect(() => {
@@ -34,7 +35,7 @@ function AppointmentsPage() {
   useEffect(() => {
     if (!user?.uid) return;
     // Use domain/application layer to fetch user role
-    // Example: import { fetchUserRoleUseCase } from '@/application/fetchUserRoleUseCase';
+    // Example: import { fetchUserRoleUseCase } from '@/application/use-cases/fetchUserRoleUseCase';
     // fetchUserRoleUseCase(user.uid).then(role => { /* update store or local state */ });
     // For now, remove direct store call
   }, [user]);
@@ -42,8 +43,8 @@ function AppointmentsPage() {
   // Fetch appointments on user/role change
   useEffect(() => {
     if (!user?.uid || typeof isDoctor !== 'boolean') return;
-    fetchAppointments(user.uid, isDoctor, getAppointments);
-  }, [user, isDoctor, fetchAppointments]);
+    fetchAppointments(user.uid, isDoctor, fetchAppointmentsUseCase.execute.bind(fetchAppointmentsUseCase));
+  }, [user, isDoctor, fetchAppointments, fetchAppointmentsUseCase]);
 
   // Check payment status on mount
   useEffect(() => {
@@ -52,13 +53,19 @@ function AppointmentsPage() {
     (async () => {
       try {
         if (user?.uid && typeof isDoctor === 'boolean') {
-          await verifyAndUpdatePayment(sessionId, user.uid, isDoctor, getAppointments);
+          await verifyAndUpdatePayment(
+            sessionId,
+            user.uid,
+            isDoctor,
+            fetchAppointmentsUseCase.execute.bind(fetchAppointmentsUseCase),
+            appointmentService
+          );
         }
       } catch {
         // Optionally handle error
       }
     })();
-  }, [verifyAndUpdatePayment, user, isDoctor]);
+  }, [verifyAndUpdatePayment, user, isDoctor, fetchAppointmentsUseCase, appointmentService]);
 
   // Join call handler
   const handleJoinCall = async (appointmentId: string) => {
@@ -74,14 +81,14 @@ function AppointmentsPage() {
       if (!appointment) throw new Error('Appointment not found');
       const patientName = appointment.patientName || user.name || 'Guest';
       const role = isDoctor ? 'doctor' : 'patient';
+      trackEvent('join_call', { appointment_id: appointmentId, role, source: 'appointments_page' });
       let roomCode = appointment.roomCode;
       let roomId = appointment.roomId;
       // If missing, generate and update
       if (!roomCode || !roomId) {
-        const { generateRoomCodeAndToken } = await import('@/domain/100msService');
-        const data = await generateRoomCodeAndToken({
-          user_id: user.uid,
-          room_id: appointmentId,
+        const data = await videoService.generateRoomCodeAndToken({
+          appointmentId,
+          userId: user.uid,
           role,
         });
         roomCode = data.roomCode;
@@ -114,7 +121,10 @@ function AppointmentsPage() {
             role={isDoctor ? USER_ROLE_DOCTOR : USER_ROLE_PATIENT}
             isAppointmentPast={isAppointmentPast}
             handleJoinCall={handleJoinCall}
-            handlePayNow={handlePayNow}
+            handlePayNow={(id, amount) => {
+              trackEvent('pay_now', { appointment_id: id, amount, source: 'appointments_page' });
+              handlePayNow(id, amount, appointmentService);
+            }}
             showActions={true}
             maxRows={100}
           />

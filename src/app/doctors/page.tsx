@@ -1,11 +1,11 @@
 'use client';
 
-import HeroSection from '../components/heroSection';
-import NavBar from '../components/navBar';
-import FooterSection from '../components/footerSection';
-import DoctorStatsSection from './DoctorStatsSection';
-import DoctorFeaturesSection from './DoctorFeaturesSection';
-import DoctorHowItWorksSection from './DoctorHowItWorksSection';
+import HeroSection from '@/presentation/components/heroSection';
+import NavBar from '@/presentation/components/navBar';
+import FooterSection from '@/presentation/components/footerSection';
+import DoctorStatsSection from '@/presentation/components/doctor/DoctorStatsSection';
+import DoctorFeaturesSection from '@/presentation/components/doctor/DoctorFeaturesSection';
+import DoctorHowItWorksSection from '@/presentation/components/doctor/DoctorHowItWorksSection';
 
 export default function DoctorsPage() {
   return (
