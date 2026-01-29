@@ -8,6 +8,7 @@ import { useSearchParams, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { useDI } from '@/presentation/context/DIContext';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 function LoginPageContent() {
   const { t } = useTranslation();
@@ -57,6 +58,7 @@ function LoginPageContent() {
       }
       // Only proceed with login if reCAPTCHA passes
       await loginUseCase.execute(email, password);
+      trackEvent('login', { method: 'email', from: fromPath });
       // Verify if the 'loggedIn' cookie is set (HttpOnly session is not visible to JS)
       if (!document.cookie.includes('loggedIn=')) {
   setErrorMsg(t('authTokenWarning'));

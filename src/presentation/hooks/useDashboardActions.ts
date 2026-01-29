@@ -3,6 +3,7 @@ import { useAppointmentStore } from '@/presentation/store/appointmentStore';
 import { useVideoStore } from '@/presentation/store/videoStore';
 import { useAuth } from '@/presentation/context/AuthContext';
 import { useDI } from '@/presentation/context/DIContext';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 export function useDashboardActions() {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ export function useDashboardActions() {
       // For dashboard actions, assume patient role and use user name
       const role = 'patient';
       const patientName = user.name || 'Guest';
+      trackEvent('join_call', { appointment_id: appointmentId, role, source: 'dashboard' });
       const roomCode = await generateRoomCodeAndStore({
         appointmentId,
         userId: user.uid,
@@ -36,6 +38,7 @@ export function useDashboardActions() {
   }, [user, setAuthStatus, generateRoomCodeAndStore, videoService]);
 
   const handlePayNow = useCallback((appointmentId: string, amount: number) => {
+    trackEvent('pay_now', { appointment_id: appointmentId, amount, source: 'dashboard' });
     storeHandlePayNow(appointmentId, amount, appointmentService);
   }, [storeHandlePayNow, appointmentService]);
 

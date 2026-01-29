@@ -7,6 +7,7 @@ import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recapt
 import { useTranslation } from 'react-i18next';
 import { useDI } from '@/presentation/context/DIContext';
 import { UserRole } from '@/domain/entities/UserRole';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 function RegisterPageInner() {
     const { t } = useTranslation();
@@ -68,6 +69,7 @@ function RegisterPageInner() {
                 password: formData.password,
                 role: formData.role === 'doctor' ? UserRole.Doctor : UserRole.Patient,
             });
+            trackEvent('sign_up', { method: 'email', role: formData.role });
 
             setShowModal(true);
             setTimeout(() => {

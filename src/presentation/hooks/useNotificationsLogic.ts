@@ -3,6 +3,7 @@ import { useAppointmentStore } from '@/presentation/store/appointmentStore';
 import type { NavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 import { useAuth } from '@/presentation/context/AuthContext';
 import { useDI } from '@/presentation/context/DIContext';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 export function useNotificationsLogic(nav: NavigationCoordinator) {
   const { appointments, loading: isLoading, error, fetchAppointments } = useAppointmentStore();
@@ -73,6 +74,10 @@ export function useNotificationsLogic(nav: NavigationCoordinator) {
 
   const handleAppointmentAction = useCallback(async (appointmentId: string, action: 'accepted' | 'rejected') => {
     try {
+      trackEvent(action === 'accepted' ? 'accept_appointment' : 'decline_appointment', {
+        appointment_id: appointmentId,
+        source: 'notifications',
+      });
       await notificationService.updateAppointmentStatusAndNotify(appointmentId, action);
       setPendingAppointments((prev) =>
         prev.filter((appointment) => appointment.id !== appointmentId)

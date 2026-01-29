@@ -2,27 +2,17 @@
 
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-
-
-// Declare gtag on the window object for TypeScript
-declare global {
-  interface Window {
-    gtag?: (command: 'config' | 'event', targetId: string, params?: Record<string, unknown>) => void;
-  }
-}
-
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
+import { pageview, isAnalyticsEnabled } from "@/presentation/analytics/gtag";
 
 export default function Analytics() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (typeof window.gtag === "function") {
-      window.gtag("config", GA_ID, {
-        page_path: pathname + (searchParams ? `?${searchParams}` : ""),
-      });
-    }
+    if (!isAnalyticsEnabled()) return;
+    const qs = searchParams?.toString();
+    const url = pathname + (qs ? `?${qs}` : "");
+    pageview(url);
   }, [pathname, searchParams]);
 
   return null;

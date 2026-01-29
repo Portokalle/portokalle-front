@@ -9,6 +9,7 @@ import RoleGuard from '@/presentation/components/RoleGuard';
 import { AppointmentsTable } from '@/presentation/components/appointment/SharedAppointmentsTable';
 import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/domain/constants/userRoles';
 import { useDI } from '@/presentation/context/DIContext';
+import { trackEvent } from '@/presentation/analytics/gtag';
 
 
 function AppointmentsPage() {
@@ -80,6 +81,7 @@ function AppointmentsPage() {
       if (!appointment) throw new Error('Appointment not found');
       const patientName = appointment.patientName || user.name || 'Guest';
       const role = isDoctor ? 'doctor' : 'patient';
+      trackEvent('join_call', { appointment_id: appointmentId, role, source: 'appointments_page' });
       let roomCode = appointment.roomCode;
       let roomId = appointment.roomId;
       // If missing, generate and update
@@ -119,7 +121,10 @@ function AppointmentsPage() {
             role={isDoctor ? USER_ROLE_DOCTOR : USER_ROLE_PATIENT}
             isAppointmentPast={isAppointmentPast}
             handleJoinCall={handleJoinCall}
-            handlePayNow={(id, amount) => handlePayNow(id, amount, appointmentService)}
+            handlePayNow={(id, amount) => {
+              trackEvent('pay_now', { appointment_id: id, amount, source: 'appointments_page' });
+              handlePayNow(id, amount, appointmentService);
+            }}
             showActions={true}
             maxRows={100}
           />
