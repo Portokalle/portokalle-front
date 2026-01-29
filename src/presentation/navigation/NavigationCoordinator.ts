@@ -5,6 +5,7 @@
 // Future extensions: analytics, auth guards, prefetching, role-based gating.
 
 import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
 
 // Stable route keys to avoid scattering raw strings.
 export enum AppRouteKey {
@@ -91,7 +92,7 @@ export interface NavigationCoordinator {
 export function useNavigationCoordinator(): NavigationCoordinator {
   const router = useRouter();
 
-  return {
+  return useMemo(() => ({
     push: (key) => router.push(getPath(key)),
     replace: (key) => router.replace(getPath(key)),
     pushPath: (path) => router.push(path),
@@ -121,7 +122,7 @@ export function useNavigationCoordinator(): NavigationCoordinator {
         // ignore dynamic route errors
       }
     },
-  };
+  }), [router]);
 }
 
 // Optional standalone helpers for non-hook usage (e.g., in services after dependency injection).
