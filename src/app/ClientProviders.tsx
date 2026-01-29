@@ -2,15 +2,13 @@
 
 import { AuthProvider } from "@/presentation/context/AuthContext";
 import { useSessionActivity } from "@/presentation/hooks/useSessionActivity";
-import { LogoutSessionUseCase } from '@/application/use-cases/logoutSessionUseCase';
-import { FirebaseSessionRepository } from '@/infrastructure/repositories/FirebaseSessionRepository';
+import { useDI } from "@/presentation/context/DIContext";
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   // Mount global idle/session activity tracker once on client
   function SessionActivityHost() {
-    const sessionRepo = new FirebaseSessionRepository();
-    const logoutSessionUseCase = new LogoutSessionUseCase(sessionRepo);
-    useSessionActivity(logoutSessionUseCase);
+    const { logoutSessionUseCase, sessionGateway } = useDI();
+    useSessionActivity(logoutSessionUseCase, sessionGateway);
     // nothing to render
     return null;
   }

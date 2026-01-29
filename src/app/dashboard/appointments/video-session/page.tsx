@@ -7,6 +7,7 @@ export default function VideoSessionPage() {
   const [loading, setLoading] = useState(true);
   const [, setUserName] = useState<string | null>(null);
   const [roomCode, setRoomCode] = useState<string | null>(null);
+  const [missingRoom, setMissingRoom] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
@@ -18,6 +19,7 @@ export default function VideoSessionPage() {
       setUserName(uname);
       // Keep loading true until iframe loads
     } else {
+      setMissingRoom(true);
       setLoading(false);
     }
 
@@ -26,8 +28,21 @@ export default function VideoSessionPage() {
     return () => clearTimeout(timeout);
   }, []);
 
-  if (loading || !roomCode) {
+  if (loading) {
     return <Loader />;
+  }
+  if (!roomCode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <h1 className="text-2xl font-semibold text-gray-800 mb-3">Missing session</h1>
+          <p className="text-gray-600 mb-6">
+            {missingRoom ? 'We could not find your video session details.' : 'This session is not available.'}
+          </p>
+          <a href="/dashboard/appointments" className="btn btn-primary">Back to appointments</a>
+        </div>
+      </div>
+    );
   }
 
   return (

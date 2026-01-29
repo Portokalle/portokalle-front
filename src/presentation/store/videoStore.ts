@@ -1,6 +1,7 @@
 
 
 import { create } from 'zustand';
+import type { IVideoService } from '@/application/ports/IVideoService';
 
 interface VideoState {
   isInCall: boolean;
@@ -11,7 +12,7 @@ interface VideoState {
   userName: string | null;
   roomCode: string | null;
   setAuthStatus: (isAuthenticated: boolean, userId: string | null, userName: string | null) => void;
-  generateRoomCodeAndStore: (params: { appointmentId: string, userId: string, role: string, userName: string }) => Promise<string>;
+  generateRoomCodeAndStore: (params: { appointmentId: string, userId: string, role: string, userName: string }, service: IVideoService) => Promise<string>;
 }
 
 export const useVideoStore = create<VideoState>()((set) => ({
@@ -25,15 +26,10 @@ export const useVideoStore = create<VideoState>()((set) => ({
   setAuthStatus: (isAuthenticated, userId, userName) => {
     set({ isAuthenticated, userId, userName, loading: false });
   },
-  generateRoomCodeAndStore: async ({ appointmentId, userId, role, userName }) => {
+  generateRoomCodeAndStore: async ({ appointmentId, userId, role, userName }, service) => {
     set({ loading: true, error: null });
     try {
-      const { generateRoomCodeAndToken } = await import('@/infrastructure/services/100msService');
-      const data = await generateRoomCodeAndToken({
-        user_id: userId,
-        room_id: appointmentId,
-        role,
-      }) as { roomCode?: string };
+      const data = await service.generateRoomCodeAndToken({ appointmentId, userId, role });
       if (!data.roomCode) throw new Error('No roomCode returned from 100ms API');
       set({ roomCode: data.roomCode, loading: false });
       window.localStorage.setItem('videoSessionRoomCode', data.roomCode);

@@ -4,7 +4,7 @@ import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCo
 import { useTranslation } from 'react-i18next';
 import Link from "next/link";
 import styles from "./notifications.module.css";
-import { useNotificationsLogic } from './useNotificationsLogic';
+import { useNotificationsLogic } from '@/presentation/hooks/useNotificationsLogic';
 
 
 function NotificationsPage() {

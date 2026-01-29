@@ -1,5 +1,5 @@
 import { UserRole } from '@/domain/entities/UserRole';
-import { IUserRepository } from '@/domain/repositories/IUserRepository';
+import { IUserRepository, UserRecord } from '@/domain/repositories/IUserRepository';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebase/firebaseconfig';
 
@@ -29,7 +29,7 @@ export class FirebaseUserRepository implements IUserRepository {
     // Implement as needed
   }
 
-  async update(_id: string, _updates: Partial<{ role: UserRole }>): Promise<void> {
+  async update(_id: string, _updates: Partial<UserRecord>): Promise<void> {
     // Implement as needed
   }
 

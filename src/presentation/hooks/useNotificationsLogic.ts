@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { auth } from '@/infrastructure/firebase/firebaseconfig';
-import { FetchAppointmentsUseCase } from '@/application/use-cases/fetchAppointmentsUseCase';
-import { FirebaseAppointmentRepository } from '@/infrastructure/repositories/FirebaseAppointmentRepository';
-import { getUserRole, fetchAppointmentDetails, dismissNotification } from '@/infrastructure/services/notificationService';
-import { updateAppointmentStatusAndNotify } from '@/infrastructure/services/appointmentNotificationService';
 import { useAppointmentStore } from '@/presentation/store/appointmentStore';
 import type { NavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
+import { useAuth } from '@/presentation/context/AuthContext';
+import { useDI } from '@/presentation/context/DIContext';
 
 export function useNotificationsLogic(nav: NavigationCoordinator) {
   const { appointments, loading: isLoading, error, fetchAppointments } = useAppointmentStore();
-  const appointmentRepo = new FirebaseAppointmentRepository();
-  const fetchAppointmentsUseCase = new FetchAppointmentsUseCase(appointmentRepo);
+  const { user, role, isAuthenticated } = useAuth();
+  const { fetchAppointmentsUseCase, notificationService } = useDI();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [appointmentDetails, setAppointmentDetails] = useState<
     { id: string; patientName: string | null; doctorName: string | null; preferredDate: string; notes: string }[]
@@ -21,41 +18,34 @@ export function useNotificationsLogic(nav: NavigationCoordinator) {
 
   useEffect(() => {
     const fetchUserRoleAndAppointments = async () => {
-      if (!auth.currentUser) {
+      if (!isAuthenticated || !user?.uid) {
         nav.toLogin();
         return;
       }
-      const userId = auth.currentUser.uid;
-      const role = await getUserRole(userId);
-      if (role) {
-        setUserRole(role);
-        await fetchAppointments(
-          userId,
-          role === 'doctor',
-          (userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor)
-        );
-      } else {
-        nav.toLogin();
-      }
+      setUserRole(role ?? null);
+      if (!role) return;
+      await fetchAppointments(
+        user.uid,
+        role === 'doctor',
+        (userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor)
+      );
     };
     fetchUserRoleAndAppointments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchAppointments]);
+  }, [fetchAppointments, isAuthenticated, user, role, fetchAppointmentsUseCase, nav]);
 
   useEffect(() => {
     const fetchDetails = async () => {
       if (appointments.length > 0) {
-        const details = await fetchAppointmentDetails(appointments);
+        const details = await notificationService.fetchAppointmentDetails(appointments);
         setAppointmentDetails(details);
       }
     };
     fetchDetails();
-  }, [appointments]);
+  }, [appointments, notificationService]);
 
   useEffect(() => {
     const fetchRelevantAppointments = async () => {
-      if (!auth.currentUser) return;
-      const user = auth.currentUser;
+      if (!user?.uid) return;
       if (userRole === 'doctor') {
         const pending = appointmentDetails.filter((appointment) => {
           const found = appointments.find((a) => a.id === appointment.id);
@@ -73,22 +63,22 @@ export function useNotificationsLogic(nav: NavigationCoordinator) {
     if (userRole && appointmentDetails.length > 0) {
       fetchRelevantAppointments();
     }
-  }, [userRole, appointmentDetails, appointments]);
+  }, [userRole, appointmentDetails, appointments, user]);
 
   const handleDismissNotification = useCallback(async (id: string) => {
     setPendingAppointments((prev) => prev.filter((appt) => appt.id !== id));
-    if (!auth.currentUser) return;
-    await dismissNotification(id, auth.currentUser.uid);
-  }, []);
+    if (!user?.uid) return;
+    await notificationService.dismissNotification(id, user.uid);
+  }, [notificationService, user]);
 
   const handleAppointmentAction = useCallback(async (appointmentId: string, action: 'accepted' | 'rejected') => {
     try {
-      await updateAppointmentStatusAndNotify(appointmentId, action);
+      await notificationService.updateAppointmentStatusAndNotify(appointmentId, action);
       setPendingAppointments((prev) =>
         prev.filter((appointment) => appointment.id !== appointmentId)
       );
     } catch {}
-  }, []);
+  }, [notificationService]);
 
   return {
     isLoading,

@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import RedirectingModal from '@/presentation/components/RedirectingModal';
 import { useAppointmentStore } from '@/presentation/store/appointmentStore';
-import { getAppointments } from '@/infrastructure/services/appointmentService';
 import { useAuth } from '@/presentation/context/AuthContext';
 import { useVideoStore } from '@/presentation/store/videoStore';
 import RoleGuard from '@/presentation/components/RoleGuard';
 import { AppointmentsTable } from '@/presentation/components/appointment/SharedAppointmentsTable';
-import { appointmentRepository } from '@/infrastructure/appointmentRepository';
 import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/domain/constants/userRoles';
+import { useDI } from '@/presentation/context/DIContext';
 
 
 function AppointmentsPage() {
@@ -24,6 +23,7 @@ function AppointmentsPage() {
     verifyAndUpdatePayment,
   } = useAppointmentStore();
   const { setAuthStatus } = useVideoStore();
+  const { appointmentService, fetchAppointmentsUseCase, videoService, appointmentRepository } = useDI();
 
   // Sync auth status with store
   useEffect(() => {
@@ -42,8 +42,8 @@ function AppointmentsPage() {
   // Fetch appointments on user/role change
   useEffect(() => {
     if (!user?.uid || typeof isDoctor !== 'boolean') return;
-    fetchAppointments(user.uid, isDoctor, getAppointments);
-  }, [user, isDoctor, fetchAppointments]);
+    fetchAppointments(user.uid, isDoctor, fetchAppointmentsUseCase.execute.bind(fetchAppointmentsUseCase));
+  }, [user, isDoctor, fetchAppointments, fetchAppointmentsUseCase]);
 
   // Check payment status on mount
   useEffect(() => {
@@ -52,13 +52,19 @@ function AppointmentsPage() {
     (async () => {
       try {
         if (user?.uid && typeof isDoctor === 'boolean') {
-          await verifyAndUpdatePayment(sessionId, user.uid, isDoctor, getAppointments);
+          await verifyAndUpdatePayment(
+            sessionId,
+            user.uid,
+            isDoctor,
+            fetchAppointmentsUseCase.execute.bind(fetchAppointmentsUseCase),
+            appointmentService
+          );
         }
       } catch {
         // Optionally handle error
       }
     })();
-  }, [verifyAndUpdatePayment, user, isDoctor]);
+  }, [verifyAndUpdatePayment, user, isDoctor, fetchAppointmentsUseCase, appointmentService]);
 
   // Join call handler
   const handleJoinCall = async (appointmentId: string) => {
@@ -78,10 +84,9 @@ function AppointmentsPage() {
       let roomId = appointment.roomId;
       // If missing, generate and update
       if (!roomCode || !roomId) {
-        const { generateRoomCodeAndToken } = await import('@/infrastructure/services/100msService');
-        const data = await generateRoomCodeAndToken({
-          user_id: user.uid,
-          room_id: appointmentId,
+        const data = await videoService.generateRoomCodeAndToken({
+          appointmentId,
+          userId: user.uid,
           role,
         });
         roomCode = data.roomCode;
@@ -114,7 +119,7 @@ function AppointmentsPage() {
             role={isDoctor ? USER_ROLE_DOCTOR : USER_ROLE_PATIENT}
             isAppointmentPast={isAppointmentPast}
             handleJoinCall={handleJoinCall}
-            handlePayNow={handlePayNow}
+            handlePayNow={(id, amount) => handlePayNow(id, amount, appointmentService)}
             showActions={true}
             maxRows={100}
           />

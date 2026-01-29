@@ -3,6 +3,7 @@ import { UserRole } from '@/domain/entities/UserRole';
 import { db } from '@/infrastructure/firebase/firebaseconfig';
 import { FirestoreCollections } from '@/infrastructure/firebase/FirestoreCollections';
 import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, limit, startAfter, getCountFromServer, updateDoc, QueryDocumentSnapshot } from 'firebase/firestore';
+import type { PaginationCursor } from '@/shared/types/PaginationCursor';
 
 export async function fetchUsers(): Promise<(User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' })[]> {
   const usersCol = collection(db, FirestoreCollections.Users);
@@ -27,14 +28,15 @@ export async function fetchUsers(): Promise<(User & { name?: string; surname?: s
 export type UsersPage = {
   items: (User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' })[];
   total: number;
-  nextCursor?: QueryDocumentSnapshot; // Firestore DocumentSnapshot for startAfter
+  nextCursor?: PaginationCursor; // Opaque cursor for startAfter
 };
 
 // Cost-optimized paginated fetch: orders by name to have deterministic pages
-export async function fetchUsersPage(pageSize: number, cursor?: QueryDocumentSnapshot): Promise<UsersPage> {
+export async function fetchUsersPage(pageSize: number, cursor?: PaginationCursor): Promise<UsersPage> {
   const col = collection(db, FirestoreCollections.Users);
   const baseQuery = query(col, orderBy('name'), limit(pageSize));
-  const q = cursor ? query(col, orderBy('name'), startAfter(cursor), limit(pageSize)) : baseQuery;
+  const cursorSnapshot = cursor as QueryDocumentSnapshot | undefined;
+  const q = cursorSnapshot ? query(col, orderBy('name'), startAfter(cursorSnapshot), limit(pageSize)) : baseQuery;
   const [snap, countSnap] = await Promise.all([
     getDocs(q),
     getCountFromServer(col),
@@ -54,7 +56,7 @@ export async function fetchUsersPage(pageSize: number, cursor?: QueryDocumentSna
     } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' };
     return extended;
   });
-  const nextCursor = snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : undefined;
+  const nextCursor: PaginationCursor | undefined = snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : undefined;
   return { items, total: countSnap.data().count, nextCursor };
 }
 
@@ -115,7 +117,7 @@ export async function firebaseDeleteUser(userId: string): Promise<void> {
   await deleteDoc(ref);
 }
 
-export async function upsertUser(user: Partial<User> & { id: string }): Promise<void> {
+export async function upsertUser(user: Partial<User> & { id: string } & Record<string, unknown>): Promise<void> {
   const ref = doc(db, FirestoreCollections.Users, user.id);
   await setDoc(ref, user, { merge: true });
 }

@@ -5,6 +5,7 @@ import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCo
 import { useDoctorSearchStore } from '@/presentation/store/doctorSearchStore';
 import { Doctor } from '@/domain/entities/Doctor';
 import { useTranslation } from 'react-i18next';
+import { useDI } from '@/presentation/context/DIContext';
 
 const DoctorSearchInput = () => {
 	const {
@@ -20,6 +21,7 @@ const DoctorSearchInput = () => {
 	const searchRef = useRef<HTMLDivElement>(null);
 	const nav = useNavigationCoordinator();
 	const { t } = useTranslation();
+	const { doctorSearchService } = useDI();
 
 	useEffect(() => {
 		// Only show overlay with results when there's content in search
@@ -31,9 +33,9 @@ const DoctorSearchInput = () => {
     
 		// Fetch starts automatically after 4 chars thanks to the store's implementation
 		if (searchTerm.trim().length >= 4) {
-			fetchDoctors();
+			fetchDoctors(doctorSearchService);
 		}
-	}, [searchTerm, fetchDoctors, toggleOverlay]);
+	}, [searchTerm, fetchDoctors, toggleOverlay, doctorSearchService]);
 
 	const handleDoctorClick = (doctor: Doctor) => {
 		nav.toDoctorProfile(doctor.id);
@@ -78,7 +80,7 @@ const DoctorSearchInput = () => {
 						}}
 					/>
 					<button
-						onClick={() => searchTerm.trim().length >= 4 && fetchDoctors()}
+						onClick={() => searchTerm.trim().length >= 4 && fetchDoctors(doctorSearchService)}
 						className={`ml-2 bg-orange-500 text-white px-4 py-2 rounded-full text-sm hover:bg-orange-600 transition-colors ${
 							searchTerm.trim().length < 4 ? 'opacity-50 cursor-not-allowed' : ''
 						}`}

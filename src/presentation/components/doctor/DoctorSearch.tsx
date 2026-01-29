@@ -3,6 +3,7 @@
 import { useDoctorSearchStore } from '@/presentation/store/doctorSearchStore';
 import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 import { useAuth } from '@/presentation/context/AuthContext';
+import { useDI } from '@/presentation/context/DIContext';
 import { Doctor } from '@/domain/entities/Doctor';
 import { useEffect } from 'react';
 
@@ -22,6 +23,7 @@ export default function DoctorSearch({ onDoctorSelect }: DoctorSearchProps) {
 		clearResults,
 	} = useDoctorSearchStore();
 	const { isAuthenticated, loading: authLoading } = useAuth();
+	const { doctorSearchService } = useDI();
 	const nav = useNavigationCoordinator();
 
 	// Reset search state when component mounts
@@ -76,7 +78,7 @@ export default function DoctorSearch({ onDoctorSelect }: DoctorSearchProps) {
 							if (value.trim() === '') {
 								clearResults(); // Clear results if search is empty
 							} else if (value.trim().length >= 4) {
-								fetchDoctors();
+								fetchDoctors(doctorSearchService);
 							}
 						}}
 					/>

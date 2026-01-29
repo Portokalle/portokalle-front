@@ -5,6 +5,7 @@ import GenericTable, { Column, RowAction } from '@/presentation/components/Gener
 import { useTranslation } from 'react-i18next';
 import '@i18n';
 import { UserRole } from '@/domain/entities/UserRole';
+import { useDI } from '@/presentation/context/DIContext';
 
 type TableUser = {
   id: string;
@@ -18,12 +19,13 @@ type TableUser = {
 export function UsersTable() {
   const { t } = useTranslation();
   const { users, loadUsersPage, searchUsers, selectUser, loading, error, total, pageSize, searchQuery } = useAdminStore();
+  const { adminGateway } = useDI();
   const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
   // Initialize search input from store to preserve last search after edits
   useEffect(() => { setSearch(searchQuery || ''); setDebounced((searchQuery || '').trim().toLowerCase()); }, [searchQuery]);
-  useEffect(() => { if (!searchQuery) loadUsersPage(0); }, [loadUsersPage, searchQuery]);
+  useEffect(() => { if (!searchQuery) loadUsersPage(0, adminGateway); }, [loadUsersPage, searchQuery, adminGateway]);
 
   // Debounce search input
   useEffect(() => {
@@ -62,20 +64,20 @@ export function UsersTable() {
   // Trigger global search when debounced query length >= 4; otherwise load paginated page
   useEffect(() => {
     if (debounced && debounced.length >= 4) {
-      searchUsers(debounced);
+      searchUsers(debounced, adminGateway);
       setPage(0);
     } else {
-      loadUsersPage(0);
+      loadUsersPage(0, adminGateway);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced]);
+  }, [debounced, adminGateway]);
 
   if (error) return <div className="text-red-600">{error}</div>;
 
   // When page changes via pagination controls, request server-side page and scroll-to-top handled by GenericTable
   const handlePageChange = (p: number) => {
     setPage(p);
-    loadUsersPage(p);
+    loadUsersPage(p, adminGateway);
   };
   return (
     <div>

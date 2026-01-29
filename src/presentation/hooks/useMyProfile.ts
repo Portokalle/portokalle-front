@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
-import { db } from "@/infrastructure/firebase/firebaseconfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { resetUserPassword } from "@/infrastructure/services/authService";
 import { useAuth } from "@/presentation/context/AuthContext";
+import { useDI } from "@/presentation/context/DIContext";
 
 export const useMyProfile = () => {
   const { user, role, loading: authLoading } = useAuth(); // Access user, role, and loading from AuthContext
+  const { fetchUserProfileUseCase, updateUserProfileUseCase, sendPasswordResetUseCase } = useDI();
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
@@ -47,7 +46,7 @@ export const useMyProfile = () => {
 
       // Update Firestore with the new profile picture URL
       setFormData((prev) => ({ ...prev, profilePicture: publicUrl }));
-      await setDoc(doc(db, 'users', user.uid), { profilePicture: publicUrl }, { merge: true });
+      await updateUserProfileUseCase.execute(user.uid, { profilePicture: publicUrl });
       
     } catch {
   alert('Failed to upload profile picture.');
@@ -65,20 +64,13 @@ export const useMyProfile = () => {
       if (!user?.uid) return;
 
       try {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
+        const userData = await fetchUserProfileUseCase.execute(user.uid);
+        if (userData) {
           setFormData((prev) => ({
             ...prev,
             ...userData,
             specializations: userData.specializations || [""],
             education: userData.education || [""],
-          }));
-        } else {
-
-          setFormData((prev) => ({
-            ...prev,
-            email: userDoc.data()?.email || "", // Fetch email from Firestore if available
           }));
         }
   } catch {
@@ -88,7 +80,7 @@ export const useMyProfile = () => {
     };
 
     fetchUserData();
-  }, [user]);
+  }, [user, fetchUserProfileUseCase]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -120,7 +112,7 @@ export const useMyProfile = () => {
   const handlePasswordReset = async () => {
     try {
       const email = formData.email;
-      await resetUserPassword(email);
+      await sendPasswordResetUseCase.execute(email);
       setResetEmailSent(true);
       alert("Password reset email sent. Please check your inbox.");
     } catch {
@@ -135,7 +127,7 @@ export const useMyProfile = () => {
       const userId = user?.uid;
       if (!userId) throw new Error("User not authenticated");
 
-      await setDoc(doc(db, "users", userId), formData, { merge: true });
+      await updateUserProfileUseCase.execute(userId, formData);
       alert("Profile updated successfully!");
     } catch {
   alert("Failed to update profile!");

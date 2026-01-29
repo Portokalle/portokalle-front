@@ -7,4 +7,8 @@ export interface IAppointmentRepository {
   update(id: string, updates: Partial<Appointment>): Promise<Appointment>;
   markAsPaid(id: string): Promise<Appointment>;
   delete(id: string): Promise<void>;
+  subscribePendingByDoctor(
+    doctorId: string,
+    onChange: (appointments: Appointment[]) => void
+  ): () => void;
 }

@@ -1,16 +1,12 @@
 
 "use client";
 export const dynamic = "force-dynamic";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/presentation/context/AuthContext";
 import { useDashboardStore } from "@/presentation/store/dashboardStore";
 import { useAppointmentStore } from "@/presentation/store/appointmentStore";
 import { isProfileIncomplete } from "@/presentation/store/generalStore";
-import { CheckProfileCompleteUseCase } from '@/application/use-cases/checkProfileCompleteUseCase';
-import { FetchAppointmentsUseCase } from '@/application/use-cases/fetchAppointmentsUseCase';
-import { userRepository } from '@/infrastructure/userRepository';
-import { appointmentRepository } from '@/infrastructure/appointmentRepository';
 import { useDashboardActions } from "@/presentation/hooks/useDashboardActions";
 import { UserRole } from "@/domain/entities/UserRole";
 import Link from "next/link";
@@ -21,6 +17,7 @@ import DashboardDoctorSearchBar from "@/presentation/components/DashboardDoctorS
 import DashboardNotificationsBell from "@/presentation/components/DashboardNotificationsBell";
 import UpcomingAppointment from "@/presentation/components/appointment/UpcomingAppointment";
 import AppointmentsTable from "@/presentation/components/appointment/AppointmentsTable";
+import { useDI } from "@/presentation/context/DIContext";
 
 
 export default function Dashboard() {
@@ -29,6 +26,7 @@ export default function Dashboard() {
   const { totalAppointments, fetchAppointments } = useDashboardStore();
   const { appointments, isAppointmentPast, fetchAppointments: fetchAllAppointments } = useAppointmentStore();
   const { handleJoinCall: baseHandleJoinCall, handlePayNow } = useDashboardActions();
+  const { checkProfileCompleteUseCase, fetchAppointmentsUseCase } = useDI();
   const [showRedirecting, setShowRedirecting] = useState(false);
   const [profileIncomplete, setProfileIncomplete] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -44,17 +42,13 @@ export default function Dashboard() {
     }
   };
 
-  // Memoize use cases to avoid recreating on every render
-  const checkProfileUseCase = useMemo(() => new CheckProfileCompleteUseCase(userRepository), []);
-  const fetchAppointmentsUseCase = useMemo(() => new FetchAppointmentsUseCase(appointmentRepository), []);
-
   // Fetch profile status and appointments
   useEffect(() => {
     let timeout: NodeJS.Timeout;
     const fetchAll = async () => {
       try {
         if (user && role) {
-          setProfileIncomplete(await isProfileIncomplete(role, user.uid, checkProfileUseCase));
+          setProfileIncomplete(await isProfileIncomplete(role, user.uid, checkProfileCompleteUseCase));
           await Promise.all([
             fetchAppointments(user.uid, role, fetchAppointmentsUseCase.execute.bind(fetchAppointmentsUseCase)),
             fetchAllAppointments(user.uid, role === UserRole.Doctor, fetchAppointmentsUseCase.execute.bind(fetchAppointmentsUseCase))
@@ -69,7 +63,7 @@ export default function Dashboard() {
       timeout = setTimeout(() => setLoading(false), 5000);
     }
     return () => timeout && clearTimeout(timeout);
-  }, [user, role, fetchAppointments, fetchAllAppointments, authLoading, checkProfileUseCase, fetchAppointmentsUseCase]);
+  }, [user, role, fetchAppointments, fetchAllAppointments, authLoading, checkProfileCompleteUseCase, fetchAppointmentsUseCase]);
 
   if (authLoading || loading) return <Loader />;
 

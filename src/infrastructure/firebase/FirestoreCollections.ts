@@ -12,8 +12,3 @@ export const DoctorFields = {
   Name: 'name',
   Specializations: 'specializations',
 };
-
-export enum SearchType {
-  Name = 'name',
-  Specializations = 'specializations',
-}

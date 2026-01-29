@@ -3,7 +3,7 @@ import "./globals.css";
 import ClientProviders from "./ClientProviders";
 import { DIProvider } from '@/presentation/context/DIContext';
 import Script from "next/script";
-import Analytics from "./analytics/Analytics";
+import Analytics from "@/presentation/components/analytics/Analytics";
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 

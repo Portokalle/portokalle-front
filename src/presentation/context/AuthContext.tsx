@@ -1,10 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/infrastructure/firebase/firebaseconfig'; // Import your Firestore config
 import { UserRole } from '@/domain/entities/UserRole';
+import { useDI } from '@/presentation/context/DIContext';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -28,48 +26,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<{ uid: string; name: string } | null>(null);
   const [role, setRole] = useState<UserRole | null>(null); // Fix type here
   const [loading, setLoading] = useState(true);
+  const { observeAuthStateUseCase } = useDI();
 
   useEffect(() => {
-    const auth = getAuth();
-
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-
-      if (currentUser) {
-        setIsAuthenticated(true);
-        setUid(currentUser.uid); // Set `uid`
-        try {
-          // Fetch the user's role from Firestore
-          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const role = userData.role || null;
-            setRole(role); // Set the user's role
-            localStorage.setItem('userRole', role); // Store the role in localStorage
-            setUser({ uid: currentUser.uid, name: userData.name || 'Unknown' }); // Ensure name is set
-          } else {
-
-            setRole(null);
-            localStorage.removeItem('userRole'); // Remove role if not found
-            setUser(null);
-          }
-        } catch {
-          setRole(null);
-          localStorage.removeItem('userRole'); // Remove role on error
-          setUser(null);
+    const readCachedRole = (): UserRole | null => {
+      if (typeof window === 'undefined') return null;
+      try {
+        const stored = localStorage.getItem('userRole');
+        if (stored && Object.values(UserRole).includes(stored as UserRole)) {
+          return stored as UserRole;
         }
+      } catch {}
+      const match = document.cookie.match(/(?:^|; )userRole=([^;]+)/);
+      if (match) {
+        const value = decodeURIComponent(match[1]);
+        if (Object.values(UserRole).includes(value as UserRole)) {
+          return value as UserRole;
+        }
+      }
+      return null;
+    };
+
+    const unsubscribe = observeAuthStateUseCase.subscribe(async (state) => {
+      if (state.isAuthenticated && state.user) {
+        setIsAuthenticated(true);
+        setUid(state.user.uid);
+        const cachedRole = readCachedRole();
+        const resolvedRole = state.profile?.role ?? cachedRole ?? UserRole.Patient;
+        const resolvedName = state.profile?.name ?? 'Unknown';
+        setRole(resolvedRole);
+        setUser({ uid: state.user.uid, name: resolvedName });
+        try {
+          localStorage.setItem('userRole', resolvedRole);
+        } catch {}
       } else {
         setIsAuthenticated(false);
-        setUid(null); // Reset `uid`
+        setUid(null);
         setUser(null);
         setRole(null);
-        localStorage.removeItem('userRole'); // Clear role on logout
+        try {
+          localStorage.removeItem('userRole');
+        } catch {}
       }
-
       setLoading(false);
     });
 
     return () => unsubscribe(); // Cleanup the listener on unmount
-  }, []);
+  }, [observeAuthStateUseCase]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, uid, user, role, loading }}>

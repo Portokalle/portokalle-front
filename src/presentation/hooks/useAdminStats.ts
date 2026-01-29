@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { getTopDoctorsByAppointments, getTopDoctorsByRequests } from '@/infrastructure/services/appointments';
 import type { User } from '@/domain/entities/User';
+import { useDI } from '@/presentation/context/DIContext';
 
 export type DoctorStat = { doctor: { name: string; id: string }, count: number };
 
@@ -20,6 +20,7 @@ export function useAdminStats(limit = 5) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const initializedRef = useRef(false);
+  const { adminGateway } = useDI();
 
   const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
   const cache = useMemo<CacheShape>(() => {
@@ -42,8 +43,8 @@ export function useAdminStats(limit = 5) {
         const needsRequests = !(cache.requests && (now - cache.requests.ts) < CACHE_TTL_MS);
 
         const [v, r] = await Promise.all([
-          needsVisits ? getTopDoctorsByAppointments(limit) : Promise.resolve(cache.visits?.data ?? []),
-          needsRequests ? getTopDoctorsByRequests(limit) : Promise.resolve(cache.requests?.data ?? []),
+          needsVisits ? adminGateway.getTopDoctorsByAppointments(limit) : Promise.resolve(cache.visits?.data ?? []),
+          needsRequests ? adminGateway.getTopDoctorsByRequests(limit) : Promise.resolve(cache.requests?.data ?? []),
         ]);
         if (signal.aborted) return;
 
@@ -63,7 +64,7 @@ export function useAdminStats(limit = 5) {
     })();
 
     return () => controller.abort();
-  }, [limit, cache, CACHE_TTL_MS]);
+  }, [limit, cache, CACHE_TTL_MS, adminGateway]);
 
   return { visits, requests, loading, error };
 }

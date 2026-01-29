@@ -51,4 +51,31 @@ export class FirebaseAppointmentRepository implements IAppointmentRepository {
   const appointmentRef = doc(db, 'appointments', id);
   await deleteDoc(appointmentRef);
   }
+
+  subscribePendingByDoctor(
+    doctorId: string,
+    onChange: (appointments: Appointment[]) => void
+  ): () => void {
+    let unsubscribe = () => {};
+    let cancelled = false;
+    import('firebase/firestore')
+      .then(({ getFirestore, collection, query, where, onSnapshot }) => {
+        if (cancelled) return;
+        const db = getFirestore();
+        const q = query(
+          collection(db, 'appointments'),
+          where('doctorId', '==', doctorId),
+          where('status', '==', 'pending')
+        );
+        unsubscribe = onSnapshot(q, (snapshot) => {
+          const items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Appointment[];
+          onChange(items);
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }
 }

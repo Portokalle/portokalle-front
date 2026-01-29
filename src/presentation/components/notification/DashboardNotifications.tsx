@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { db } from '@/infrastructure/firebase/firebaseconfig';
-import { collection, query, where, onSnapshot, updateDoc, doc } from 'firebase/firestore';
+import { useDI } from '@/presentation/context/DIContext';
 
 interface Notification {
   id: string;
@@ -16,29 +15,22 @@ interface Notification {
 export default function DashboardNotifications({ doctorId }: { doctorId: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { t } = useTranslation();
+  const { notificationService } = useDI();
 
   useEffect(() => {
     if (!doctorId) {
       return;
     }
-
-    const q = query(
-      collection(db, 'appointments'),
-      where('doctorId', '==', doctorId),
-      where('status', '==', 'pending'),
-      where('dismissedByDoctor', '!=', true)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedNotifications = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Notification[];
-      setNotifications(fetchedNotifications);
+    const unsubscribe = notificationService.subscribePendingAppointments(doctorId, (items) => {
+      const filtered = items.filter((item) => {
+        const dismissedBy = (item as unknown as { dismissedBy?: Record<string, boolean> }).dismissedBy;
+        return !dismissedBy?.[doctorId];
+      });
+      setNotifications(filtered as Notification[]);
     });
 
     return () => unsubscribe();
-  }, [doctorId]);
+  }, [doctorId, notificationService]);
 
   return (
     <div className="notifications">
@@ -59,7 +51,7 @@ export default function DashboardNotifications({ doctorId }: { doctorId: string 
             <button
               className="ml-4 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
               onClick={async () => {
-                await updateDoc(doc(db, 'appointments', notification.id), { dismissedByDoctor: true });
+                await notificationService.dismissNotification(notification.id, doctorId);
               }}
             >
               {t('dismiss')}

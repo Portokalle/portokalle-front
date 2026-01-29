@@ -3,9 +3,9 @@
 import HeroSection from '@/presentation/components/heroSection';
 import NavBar from '@/presentation/components/navBar';
 import FooterSection from '@/presentation/components/footerSection';
-import ClinicBenefitsSection from './ClinicBenefitsSection';
-import ClinicHowItWorksSection from './ClinicHowItWorksSection';
-import ClinicCtaSection from './ClinicCtaSection';
+import ClinicBenefitsSection from '@/presentation/components/clinicians/ClinicBenefitsSection';
+import ClinicHowItWorksSection from '@/presentation/components/clinicians/ClinicHowItWorksSection';
+import ClinicCtaSection from '@/presentation/components/clinicians/ClinicCtaSection';
 
 export default function ClinicsPage() {
   return (

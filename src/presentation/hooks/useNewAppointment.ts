@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { isAuthenticated, fetchUserDetails } from '@/infrastructure/services/authService';
 import { useNewAppointmentStore } from '@/presentation/store/newAppointmentStore';
 import { Appointment } from '@/domain/entities/Appointment';
 import { AppointmentStatus } from '@/domain/entities/AppointmentStatus';
 import { useAuth } from '@/presentation/context/AuthContext';
-import { CreateAppointmentUseCase } from '@/application/use-cases/createAppointmentUseCase';
-import { FirebaseAppointmentRepository } from '@/infrastructure/repositories/FirebaseAppointmentRepository';
+import { useDI } from '@/presentation/context/DIContext';
 import { addMinutes, format, isSameDay, isBefore, startOfDay } from 'date-fns';
 
 export default function useNewAppointment() {
@@ -28,19 +26,13 @@ export default function useNewAppointment() {
   const [patientName, setPatientName] = useState<string>('');
   const [availableTimes, setAvailableTimes] = useState<{ time: string; disabled: boolean }[]>();
   const { user } = useAuth();
-  const appointmentRepo = new FirebaseAppointmentRepository();
-  const createAppointment = new CreateAppointmentUseCase(appointmentRepo);
+  const { appointmentRepository, createAppointmentUseCase } = useDI();
 
   useEffect(() => {
-    isAuthenticated(async (authState) => {
-      if (authState.userId) {
-        const userDetails = await fetchUserDetails(authState.userId);
-        if (userDetails?.name) {
-          setPatientName(userDetails.name);
-        }
-      }
-    });
-  }, []);
+    if (user?.name) {
+      setPatientName(user.name);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (preferredDate) {
@@ -72,7 +64,7 @@ export default function useNewAppointment() {
     preferredTime: string
   ): Promise<boolean> => {
   // Use repository method for existence check
-  const appointments = await appointmentRepo.getByUser(patientId, false);
+  const appointments = await appointmentRepository.getByUser(patientId, false);
   return appointments.some(a => a.doctorId === doctorId && a.preferredDate === preferredDate && a.preferredTime === preferredTime);
   };
 
@@ -119,7 +111,7 @@ export default function useNewAppointment() {
         return;
       }
   // Use application layer use case for creation
-  await createAppointment.execute(appointmentData as Appointment);
+  await createAppointmentUseCase.execute(appointmentData as Appointment);
       resetAppointment();
       setShowModal(true);
       let progressValue = 100;

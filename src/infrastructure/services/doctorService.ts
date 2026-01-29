@@ -1,7 +1,8 @@
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/infrastructure/firebase/firebaseconfig';
 import { Doctor } from '@/domain/entities/Doctor';
-import { FirestoreCollections, DoctorFields, SearchType } from '@/infrastructure/firebase/FirestoreCollections';
+import { FirestoreCollections, DoctorFields } from '@/infrastructure/firebase/FirestoreCollections';
+import { SearchType } from '@/domain/constants/searchType';
 import { hasSpecialization, isProfileComplete } from '@/domain/rules/doctorRules';
 
 export async function getDoctorById(doctorId: string): Promise<Doctor | null> {

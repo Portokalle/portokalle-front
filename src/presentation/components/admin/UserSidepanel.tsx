@@ -2,8 +2,9 @@
 
 import { useAdminStore } from "@/presentation/store/adminStore";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useToast } from "./ToastProvider";
+import { useToast } from "@/presentation/components/admin/ToastProvider";
 import { UserRole } from "@/domain/entities/UserRole";
+import { useDI } from "@/presentation/context/DIContext";
 
 export function UserSidepanel() {
   const {
@@ -22,10 +23,11 @@ export function UserSidepanel() {
   const user = useMemo(() => users.find(u => u.id === selectedUserId) ?? null, [users, selectedUserId]) as (typeof users[number] & { approvalStatus?: 'pending' | 'approved' }) | null;
   const [resetLink, setResetLink] = useState<string | null>(null);
   const { showToast } = useToast();
+  const { adminGateway } = useDI();
   const [local, setLocal] = useState<{ name?: string; surname?: string; email?: string; role?: UserRole; specialization?: string; bio?: string; specializations?: string[] }>({});
   const panelRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => { if (selectedUserId) loadSelectedDetails(); }, [selectedUserId, loadSelectedDetails]);
+  useEffect(() => { if (selectedUserId) loadSelectedDetails(adminGateway); }, [selectedUserId, loadSelectedDetails, adminGateway]);
   useEffect(() => {
     if (user) {
       setLocal({
@@ -59,9 +61,9 @@ export function UserSidepanel() {
 
   const save = async () => {
     try {
-      await updateSelected({ name: local.name, surname: local.surname, role: local.role, email: local.email });
+      await updateSelected({ name: local.name, surname: local.surname, role: local.role, email: local.email }, adminGateway);
       if (local.role === UserRole.Doctor) {
-        await updateDoctorProfile({ specialization: local.specialization, bio: local.bio, specializations: local.specializations });
+        await updateDoctorProfile({ specialization: local.specialization, bio: local.bio, specializations: local.specializations }, adminGateway);
       }
       showToast('Profile updated', 'success');
     } catch (e) {
@@ -72,7 +74,7 @@ export function UserSidepanel() {
   const approve = async () => {
     if (!user) return;
     try {
-      await useAdminStore.getState().approveDoctor(user.id);
+      await useAdminStore.getState().approveDoctor(user.id, adminGateway);
       showToast('Doctor approved', 'success');
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Failed to approve doctor', 'error');
@@ -82,13 +84,9 @@ export function UserSidepanel() {
   const generateReset = async () => {
     if (!user) return;
     try {
-      const res = await fetch('/api/admin/reset-password', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id }), credentials: 'include',
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to reset');
-      setResetLink(data.resetLink || null);
+      const link = await adminGateway.generatePasswordResetLink(user.id);
+      if (!link) throw new Error('Failed to reset');
+      setResetLink(link);
       showToast('Password reset link generated', 'success');
     } catch (e) {
       showToast(e instanceof Error ? e.message : 'Failed to generate reset link', 'error');
@@ -189,7 +187,7 @@ export function UserSidepanel() {
                 <div className="flex flex-wrap gap-2">
                   <button className="px-4 py-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 disabled:opacity-60" disabled={loading} onClick={save}>Save changes</button>
                   <button className="px-4 py-2 rounded-full border border-gray-300 text-gray-800 hover:bg-gray-100" disabled={loading} onClick={() => selectUser(null)}>Cancel</button>
-                  <button className="px-4 py-2 rounded-full border border-red-300 text-red-600 hover:bg-red-50" disabled={loading} onClick={() => { if (user && confirm('Delete this user?')) deleteUser(user.id); }}>Delete user</button>
+                  <button className="px-4 py-2 rounded-full border border-red-300 text-red-600 hover:bg-red-50" disabled={loading} onClick={() => { if (user && confirm('Delete this user?')) deleteUser(user.id, adminGateway); }}>Delete user</button>
                 </div>
 
                 <div className="mt-2 rounded-xl border bg-gray-50 p-3">

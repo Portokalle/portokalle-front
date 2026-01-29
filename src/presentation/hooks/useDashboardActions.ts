@@ -2,11 +2,13 @@ import { useCallback } from 'react';
 import { useAppointmentStore } from '@/presentation/store/appointmentStore';
 import { useVideoStore } from '@/presentation/store/videoStore';
 import { useAuth } from '@/presentation/context/AuthContext';
+import { useDI } from '@/presentation/context/DIContext';
 
 export function useDashboardActions() {
   const { user } = useAuth();
   const { setAuthStatus, generateRoomCodeAndStore } = useVideoStore();
   const { handlePayNow: storeHandlePayNow } = useAppointmentStore();
+  const { appointmentService, videoService } = useDI();
 
   // Join call using Zustand store and localStorage hydration
   const handleJoinCall = useCallback(async (appointmentId: string) => {
@@ -24,18 +26,18 @@ export function useDashboardActions() {
         userId: user.uid,
         role,
         userName: patientName,
-      });
+      }, videoService);
       window.localStorage.setItem('videoSessionRoomCode', roomCode);
       window.localStorage.setItem('videoSessionUserName', patientName);
       window.location.href = '/dashboard/appointments/video-session';
     } catch (error) {
       alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-  }, [user, setAuthStatus, generateRoomCodeAndStore]);
+  }, [user, setAuthStatus, generateRoomCodeAndStore, videoService]);
 
   const handlePayNow = useCallback((appointmentId: string, amount: number) => {
-    storeHandlePayNow(appointmentId, amount);
-  }, [storeHandlePayNow]);
+    storeHandlePayNow(appointmentId, amount, appointmentService);
+  }, [storeHandlePayNow, appointmentService]);
 
   return { handleJoinCall, handlePayNow };
 }

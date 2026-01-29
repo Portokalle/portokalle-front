@@ -23,6 +23,7 @@ import { useAuth } from '@/presentation/context/AuthContext';
 import { useDI } from '@/presentation/context/DIContext';
 import { useInitializeAppointments } from '@/presentation/store/appointmentStore';
 import { getNavigationPaths, NavigationKey } from '@/presentation/store/navigationStore';
+import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 
 type NavItem = { key: NavigationKey; name: string; href: string };
 
@@ -31,6 +32,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const pathname = usePathname();
 
   const { role, loading, isAuthenticated, user } = useAuth();
+  const nav = useNavigationCoordinator();
   const { fetchAppointmentsUseCase } = useDI();
   const initializeAppointments = useInitializeAppointments((userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor));
   const initializedRef = useRef(false);
@@ -49,8 +51,26 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     }
   }, []);
 
-  // Loading guard (keeps parity with dashboard experience)
-  if (loading || !isAuthenticated || !role) {
+  // Redirect to login when auth check completes and user is not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      nav.toLogin(pathname ?? undefined);
+    }
+  }, [loading, isAuthenticated, pathname, nav]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-neutral-50">
+        <div className="loading loading-spinner loading-lg" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (!role) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-neutral-50">
         <div className="loading loading-spinner loading-lg" />

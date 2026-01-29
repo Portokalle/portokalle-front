@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchDoctors } from "@/infrastructure/services/doctorService";
 import { Doctor } from '@/domain/entities/Doctor';
 import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
-import { SearchType } from '@/infrastructure/firebase/FirestoreCollections';
+import { SearchType } from '@/domain/constants/searchType';
+import { useDI } from '@/presentation/context/DIContext';
 
 interface DoctorSearchModalProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const nav = useNavigationCoordinator();
+  const { doctorSearchService } = useDI();
 
   const fetchDoctorsList = useCallback(async (term: string) => {
     setLoading(true);
@@ -27,8 +28,8 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
     setFilteredDoctors([]);
 
     try {
-      const doctorsByName = await fetchDoctors(term, SearchType.Name);
-      const doctorsBySpecializations = await fetchDoctors(term, SearchType.Specializations); // Corrected to use specializations
+      const doctorsByName = await doctorSearchService.fetchDoctors(term, SearchType.Name);
+      const doctorsBySpecializations = await doctorSearchService.fetchDoctors(term, SearchType.Specializations); // Corrected to use specializations
       const uniqueDoctors = Array.from(
         new Map([...doctorsByName, ...doctorsBySpecializations].map((doc) => [doc.id, doc])).values()
       );
@@ -38,7 +39,7 @@ export default function DoctorSearchModal({ isOpen, onClose, position }: DoctorS
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, doctorSearchService]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {

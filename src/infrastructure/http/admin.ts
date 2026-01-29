@@ -19,7 +19,7 @@ export async function apiResetPassword(userId: string) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Failed to reset password');
-  return data as { ok: boolean };
+  return data as { ok: boolean; resetLink?: string };
 }
 
 export async function apiDeleteUser(userId: string) {

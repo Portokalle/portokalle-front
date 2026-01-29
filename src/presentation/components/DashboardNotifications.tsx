@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { db } from '@/infrastructure/firebase/firebaseconfig';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { useDI } from '@/presentation/context/DIContext';
 
 interface Notification {
   id: string;
@@ -16,28 +15,17 @@ interface Notification {
 export default function DashboardNotifications({ doctorId }: { doctorId: string }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
     const { t } = useTranslation();
+  const { notificationService } = useDI();
 
   useEffect(() => {
     if (!doctorId) {
       return;
     }
-
-    const q = query(
-      collection(db, 'appointments'),
-      where('doctorId', '==', doctorId),
-      where('status', '==', 'pending') // Fetch only pending appointments
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedNotifications = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Notification[];
-      setNotifications(fetchedNotifications);
+    const unsubscribe = notificationService.subscribePendingAppointments(doctorId, (items) => {
+      setNotifications(items as Notification[]);
     });
-
     return () => unsubscribe();
-  }, [doctorId]);
+  }, [doctorId, notificationService]);
 
   return (
     <div className="notifications">

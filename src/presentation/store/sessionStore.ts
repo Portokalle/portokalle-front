@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { LogoutSessionUseCase } from '@/application/use-cases/logoutSessionUseCase';
 import { setCookie, getCookie, deleteCookie } from '@/presentation/utils/sessionUtils';
-import { logoutApi } from '@/infrastructure/http/logoutApi';
+import type { ISessionGateway } from '@/application/ports/ISessionGateway';
 
 // 30 minutes idle timeout
 const IDLE_MS = 30 * 60 * 1000;
@@ -16,12 +16,12 @@ interface SessionState {
   _intervalId: number | null;
   _lastRefresh: number;
   _stopFn?: () => void;
-  initMonitor: (logoutSessionUseCase: LogoutSessionUseCase) => void;
+  initMonitor: (logoutSessionUseCase: LogoutSessionUseCase, sessionGateway?: ISessionGateway) => void;
   stopMonitor: () => void;
   touchActivity: () => void;
   refreshSlidingCookies: () => void;
-  logoutForIdle: (logoutSessionUseCase: LogoutSessionUseCase) => void;
-  logout: (reason?: string, logoutSessionUseCase?: LogoutSessionUseCase) => void;
+  logoutForIdle: (logoutSessionUseCase: LogoutSessionUseCase, sessionGateway?: ISessionGateway) => void;
+  logout: (reason?: string, logoutSessionUseCase?: LogoutSessionUseCase, sessionGateway?: ISessionGateway) => void;
 }
 
 export const useSessionStore = create<SessionState>((set, get) => ({
@@ -31,7 +31,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   _intervalId: null,
   _lastRefresh: 0,
 
-  initMonitor: (logoutSessionUseCase: LogoutSessionUseCase) => {
+  initMonitor: (logoutSessionUseCase: LogoutSessionUseCase, sessionGateway?: ISessionGateway) => {
     if (typeof window === 'undefined') return;
     if (get().isMonitoring) return;
 
@@ -75,7 +75,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       const last = Number(getCookie('lastActivity')) || 0;
       const inactive = Date.now() - last > idleMs;
       if (inactive) {
-        get().logoutForIdle(logoutSessionUseCase);
+        get().logoutForIdle(logoutSessionUseCase, sessionGateway);
       }
     }, 30 * 1000);
 
@@ -119,8 +119,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     if (role) setCookie('userRole', role, maxAgeSeconds);
   },
 
-  logoutForIdle: (logoutSessionUseCase: LogoutSessionUseCase) => {
+  logoutForIdle: (logoutSessionUseCase: LogoutSessionUseCase, sessionGateway?: ISessionGateway) => {
     logoutSessionUseCase.execute();
+    if (sessionGateway) {
+      sessionGateway.logoutServerSession().catch(() => {});
+    }
     // HttpOnly session is cleared by middleware or via API logout; clear client-visible helpers
     deleteCookie('userRole');
     deleteCookie('lastActivity');
@@ -129,11 +132,13 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       window.location.href = '/login?reason=idle-timeout';
     }
   },
-  logout: async (reason?: string, logoutSessionUseCase?: LogoutSessionUseCase) => {
+  logout: async (reason?: string, logoutSessionUseCase?: LogoutSessionUseCase, sessionGateway?: ISessionGateway) => {
     if (logoutSessionUseCase) logoutSessionUseCase.execute();
     // Ask server to clear HttpOnly cookie via network layer
     try {
-      await logoutApi();
+      if (sessionGateway) {
+        await sessionGateway.logoutServerSession();
+      }
     } catch {}
     deleteCookie('userRole');
     deleteCookie('lastActivity');

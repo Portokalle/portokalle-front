@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from '@/infrastructure/firebase/firebaseconfig';
 import Link from 'next/link';
 import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from 'react-i18next';
+import { useDI } from '@/presentation/context/DIContext';
+import { UserRole } from '@/domain/entities/UserRole';
 
 function RegisterPageInner() {
     const { t } = useTranslation();
@@ -26,6 +25,7 @@ function RegisterPageInner() {
     const [showModal, setShowModal] = useState(false); // State to control modal visibility
     const nav = useNavigationCoordinator();
     const { executeRecaptcha } = useGoogleReCaptcha();
+    const { registerUserUseCase } = useDI();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -60,42 +60,14 @@ function RegisterPageInner() {
                 return;
             }
             // Only proceed with registration if reCAPTCHA passes
-            const userCredential = await createUserWithEmailAndPassword(
-                auth,
-                formData.email,
-                formData.password
-            );
-            const user = userCredential.user;
-
-            // Save extra user info in Firestore
-            const isDoctor = formData.role === 'doctor';
-            await setDoc(doc(db, 'users', user.uid), {
+            await registerUserUseCase.execute({
                 name: formData.name,
                 surname: formData.surname,
-                phoneNumber: formData.phone,
+                phone: formData.phone,
                 email: formData.email,
-                role: formData.role,
-                ...(isDoctor ? { approvalStatus: 'pending' } : {}),
-                createdAt: new Date().toISOString(),
+                password: formData.password,
+                role: formData.role === 'doctor' ? UserRole.Doctor : UserRole.Patient,
             });
-
-            // Notify admin about new doctor registration
-            if (isDoctor) {
-                try {
-                    await addDoc(collection(db, 'notifications'), {
-                        type: 'doctor_registration',
-                        userId: user.uid,
-                        name: formData.name,
-                        surname: formData.surname,
-                        email: formData.email,
-                        createdAt: serverTimestamp(),
-                        status: 'pending',
-                    });
-                } catch (e) {
-                    // Non-blocking: registration succeeds even if notification write fails
-                    console.warn('Failed to create admin notification for doctor registration', e);
-                }
-            }
 
             setShowModal(true);
             setTimeout(() => {

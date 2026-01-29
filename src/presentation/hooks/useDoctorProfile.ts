@@ -1,19 +1,19 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Doctor } from '@/domain/entities/Doctor';
-import { FirebaseUserRepository } from '@/infrastructure/repositories/FirebaseUserRepository';
+import { useDI } from '@/presentation/context/DIContext';
 
 
 export const useDoctorProfile = (id: string) => {
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const userRepo = useMemo(() => new FirebaseUserRepository(), []);
+  const { userRepository } = useDI();
 
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
         // Use repository to fetch doctor profile
-        const user = await userRepo.getById(id);
+        const user = await userRepository.getById(id);
         if (user && user.name) {
           setDoctor({
             id: user.id,
@@ -31,7 +31,7 @@ export const useDoctorProfile = (id: string) => {
       }
     };
     fetchDoctor();
-  }, [id, userRepo]);
+  }, [id, userRepository]);
 
   return { doctor, loading, error };
 };
