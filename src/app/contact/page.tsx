@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import FooterSection from "@/presentation/components/footerSection";
 import NavBar from "@/presentation/components/navBar";
-import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 function ContactPageInner() {
   const { t } = useTranslation();
@@ -142,12 +142,5 @@ function ContactPageInner() {
 }
 
 export default function ContactPage() {
-  return (
-    <GoogleReCaptchaProvider
-      reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-      scriptProps={{ async: true, appendTo: "head" }}
-    >
-      <ContactPageInner />
-    </GoogleReCaptchaProvider>
-  );
+  return <ContactPageInner />;
 }

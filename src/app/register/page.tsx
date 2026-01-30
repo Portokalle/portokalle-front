@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
-import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from 'react-i18next';
 import { useDI } from '@/presentation/context/DIContext';
 import { UserRole, toUserRole } from '@/domain/entities/UserRole';
@@ -248,12 +248,5 @@ function RegisterPageInner() {
 }
 
 export default function RegisterPage() {
-    return (
-        <GoogleReCaptchaProvider
-            reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-            scriptProps={{ async: true, appendTo: "head" }}
-        >
-            <RegisterPageInner />
-        </GoogleReCaptchaProvider>
-    );
+    return <RegisterPageInner />;
 }

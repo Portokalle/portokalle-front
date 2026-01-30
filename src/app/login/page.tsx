@@ -4,9 +4,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import '@/i18n/i18n';
 import Link from 'next/link';
-import { useSearchParams, usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useGoogleReCaptcha, GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { useDI } from '@/presentation/context/DIContext';
 import { trackEvent } from '@/presentation/analytics/gtag';
 
@@ -191,17 +191,9 @@ function LoginPageContent() {
 }
 
 export default function LoginPage() {
-  const pathname = usePathname();
   return (
-    <GoogleReCaptchaProvider
-      reCaptchaKey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-      scriptProps={{ async: true, appendTo: "head" }}
-      // Force re-mount on route changes to avoid stuck loading cases
-      key={pathname}
-    >
-      <Suspense fallback={<div>Loading...</div>}>
-        <LoginPageContent />
-      </Suspense>
-    </GoogleReCaptchaProvider>
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
