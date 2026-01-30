@@ -4,6 +4,7 @@ import { useVideoStore } from '@/presentation/store/videoStore';
 import { useAuth } from '@/presentation/context/AuthContext';
 import { useDI } from '@/presentation/context/DIContext';
 import { trackEvent } from '@/presentation/analytics/gtag';
+import { UserRole } from '@/domain/entities/UserRole';
 
 export function useDashboardActions() {
   const { user } = useAuth();
@@ -20,7 +21,7 @@ export function useDashboardActions() {
         return;
       }
       // For dashboard actions, assume patient role and use user name
-      const role = 'patient';
+      const role = UserRole.Patient;
       const patientName = user.name || 'Guest';
       trackEvent('join_call', { appointment_id: appointmentId, role, source: 'dashboard' });
       const roomCode = await generateRoomCodeAndStore({

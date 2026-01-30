@@ -1,6 +1,7 @@
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/infrastructure/firebase/firebaseconfig';
+import { UserRole, toUserRole } from '@/domain/entities/UserRole';
 
 import { sendPasswordResetEmail } from "firebase/auth";
 
@@ -34,7 +35,9 @@ export const login = async (email: string, password: string) => {
 
         // Retrieve user role from Firestore
         const userDoc = await getDoc(doc(db, 'users', user.uid));
-        const role = userDoc.exists() ? userDoc.data()?.role || 'patient' : 'patient';
+        const role = userDoc.exists()
+            ? (toUserRole(userDoc.data()?.role) ?? UserRole.Patient)
+            : UserRole.Patient;
 
         // Get ID token and send to server to create an HttpOnly session cookie
         const idToken = await user.getIdToken();

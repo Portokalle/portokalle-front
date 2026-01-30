@@ -6,19 +6,27 @@ import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCo
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { useTranslation } from 'react-i18next';
 import { useDI } from '@/presentation/context/DIContext';
-import { UserRole } from '@/domain/entities/UserRole';
+import { UserRole, toUserRole } from '@/domain/entities/UserRole';
 import { trackEvent } from '@/presentation/analytics/gtag';
 
 function RegisterPageInner() {
     const { t } = useTranslation();
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        name: string;
+        surname: string;
+        phone: string;
+        email: string;
+        password: string;
+        confirmPassword: string;
+        role: UserRole;
+    }>({
         name: '',
         surname: '',
         phone: '',
         email: '',
         password: '',
         confirmPassword: '',
-        role: 'patient', // Default role
+        role: UserRole.Patient, // Default role
     });
 
     const [loading, setLoading] = useState(false);
@@ -30,6 +38,11 @@ function RegisterPageInner() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
+        if (name === 'role') {
+            const parsedRole = toUserRole(value) ?? UserRole.Patient;
+            setFormData((prev) => ({ ...prev, role: parsedRole }));
+            return;
+        }
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
@@ -67,7 +80,7 @@ function RegisterPageInner() {
                 phone: formData.phone,
                 email: formData.email,
                 password: formData.password,
-                role: formData.role === 'doctor' ? UserRole.Doctor : UserRole.Patient,
+                role: formData.role,
             });
             trackEvent('sign_up', { method: 'email', role: formData.role });
 
@@ -194,8 +207,8 @@ function RegisterPageInner() {
                                 value={formData.role}
                                 onChange={handleChange}
                             >
-                                <option value="patient">{t('patient')}</option>
-                                <option value="doctor">{t('doctor')}</option>
+                                <option value={UserRole.Patient}>{t('patient')}</option>
+                                <option value={UserRole.Doctor}>{t('doctor')}</option>
                             </select>
                         </div>
 

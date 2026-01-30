@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { UserRole, toUserRole } from './src/domain/entities/UserRole';
 
 // Root-level middleware (must be at project root for Next.js to apply)
 export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
-  const role = req.cookies.get('userRole')?.value;
+  const roleValue = req.cookies.get('userRole')?.value;
+  const role = toUserRole(roleValue);
   const hasSession = req.cookies.get('session')?.value;
   const lastActivityStr = req.cookies.get('lastActivity')?.value;
   const lastActivity = lastActivityStr ? Number(lastActivityStr) : null;
@@ -15,14 +17,14 @@ export function middleware(req: NextRequest) {
   // Admins should land on /admin, others on /dashboard
   // Require both auth token AND role cookie to reduce false positives from stale tokens
   if (hasSession && role && (url.pathname === '/login' || url.pathname === '/register')) {
-    url.pathname = role === 'admin' ? '/admin' : '/dashboard';
+    url.pathname = role === UserRole.Admin ? '/admin' : '/dashboard';
     return NextResponse.redirect(url);
   }
 
   // Protect dashboard routes
   if (url.pathname.startsWith('/dashboard')) {
     // If admin tries to access dashboard, redirect them to admin home
-    if (hasSession && role === 'admin') {
+    if (hasSession && role === UserRole.Admin) {
       url.pathname = '/admin';
       return NextResponse.redirect(url);
     }
@@ -53,12 +55,12 @@ export function middleware(req: NextRequest) {
 
     if (hasSession && role) {
       // Allow both doctors and patients to view doctor profiles
-      if (url.pathname.startsWith('/dashboard/doctor') && !(role === 'doctor' || role === 'patient')) {
+      if (url.pathname.startsWith('/dashboard/doctor') && !(role === UserRole.Doctor || role === UserRole.Patient)) {
         url.pathname = '/dashboard';
         return NextResponse.redirect(url);
       }
       // Patient-only routes
-      if (url.pathname.startsWith('/dashboard/search') && role !== 'patient') {
+      if (url.pathname.startsWith('/dashboard/search') && role !== UserRole.Patient) {
         url.pathname = '/dashboard';
         return NextResponse.redirect(url);
       }
@@ -72,7 +74,7 @@ export function middleware(req: NextRequest) {
       url.searchParams.set('from', req.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
-    if (role !== 'admin') {
+    if (role !== UserRole.Admin) {
       url.pathname = '/';
       return NextResponse.redirect(url);
     }

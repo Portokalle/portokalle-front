@@ -3,7 +3,7 @@ import { UserRole } from '@/domain/entities/UserRole';
 import { fetchUsers, fetchUserById, fetchDoctorById, fetchUsersPage, UsersPage, upsertUser, updateDoctorProfile } from '@/infrastructure/firebase/users';
 import type { PaginationCursor } from '@/shared/types/PaginationCursor';
 import { apiCreateAdmin, apiResetPassword, apiDeleteUser } from '@/infrastructure/http/admin';
-import { fetchAppointmentsForUser, fetchAppointmentsForDoctor } from '@/infrastructure/firebase/appointments';
+import { fetchAppointmentCountForUser, fetchAppointmentCountForDoctor } from '@/infrastructure/firebase/appointments';
 
 export async function getAllUsers(): Promise<User[]> {
   return fetchUsers();
@@ -22,13 +22,11 @@ export async function getDoctorProfile(firebaseId: string): Promise<(User & { na
 }
 
 export async function getUserAppointmentCount(userId: string): Promise<number> {
-  const apps = await fetchAppointmentsForUser(userId);
-  return apps.length;
+  return fetchAppointmentCountForUser(userId);
 }
 
 export async function getDoctorAppointmentCount(doctorId: string): Promise<number> {
-  const apps = await fetchAppointmentsForDoctor(doctorId);
-  return apps.length;
+  return fetchAppointmentCountForDoctor(doctorId);
 }
 
 export async function createAdminUser(payload: { name: string; surname: string; email: string; password: string }): Promise<User> {

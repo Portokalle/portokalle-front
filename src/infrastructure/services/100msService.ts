@@ -1,9 +1,10 @@
 import type { GenerateRoomCodeAndTokenResponse } from '@/infrastructure/types/100msTypes';
+import type { UserRole } from '@/domain/entities/UserRole';
 
 export async function generateRoomCodeAndToken({ user_id, room_id, role, template_id }: {
   user_id: string;
   room_id: string;
-  role: string;
+  role: UserRole;
   template_id?: string;
 }) {
   const response = await fetch('/api/100ms/generate-token', {

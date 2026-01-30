@@ -67,8 +67,8 @@ export function GenericTable<T extends { id?: string | number }>(props: GenericT
     const arr = [...data];
     if (sort) arr.sort(sort);
     if (typeof maxRows === 'number') return arr.slice(0, maxRows);
-    // Client-side pagination if page is provided
-    if (typeof page === 'number') {
+    // Client-side pagination if page is provided and no server total was supplied
+    if (typeof page === 'number' && typeof total !== 'number') {
       const start = page * pageSize;
       return arr.slice(start, start + pageSize);
     }

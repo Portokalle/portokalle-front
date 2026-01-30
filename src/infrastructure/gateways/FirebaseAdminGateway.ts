@@ -17,6 +17,7 @@ import {
   generatePasswordResetLink,
 } from '@/infrastructure/services/users';
 import { getTopDoctorsByAppointments, getTopDoctorsByRequests } from '@/infrastructure/services/appointments';
+import { apiDismissAppointments } from '@/infrastructure/http/admin';
 
 export class FirebaseAdminGateway implements IAdminGateway {
   async getAllUsers(): Promise<AdminUser[]> {
@@ -78,5 +79,9 @@ export class FirebaseAdminGateway implements IAdminGateway {
   async getUserRole(userId: string): Promise<UserRole | null> {
     const user = await getUserById(userId);
     return user?.role ?? null;
+  }
+
+  async dismissAdminNotifications(appointmentIds: string[]): Promise<void> {
+    await apiDismissAppointments(appointmentIds);
   }
 }

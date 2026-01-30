@@ -1,5 +1,6 @@
 import { IAppointmentRepository } from '@/domain/repositories/IAppointmentRepository';
 import { Appointment } from '@/domain/entities/Appointment';
+import { AppointmentStatus } from '@/domain/entities/AppointmentStatus';
 
 export class FirebaseAppointmentRepository implements IAppointmentRepository {
   async getById(id: string): Promise<Appointment | null> {
@@ -17,6 +18,31 @@ export class FirebaseAppointmentRepository implements IAppointmentRepository {
     const field = isDoctor ? 'doctorId' : 'patientId';
     const appointmentsRef = collection(db, 'appointments');
     const q = query(appointmentsRef, where(field, '==', userId));
+    const snapshot = await getDocs(q);
+    const results: Appointment[] = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      results.push({ id: doc.id, ...data } as Appointment);
+    });
+    return results;
+  }
+  async getAll(): Promise<Appointment[]> {
+    const { getFirestore, collection, getDocs } = await import('firebase/firestore');
+    const db = getFirestore();
+    const appointmentsRef = collection(db, 'appointments');
+    const snapshot = await getDocs(appointmentsRef);
+    const results: Appointment[] = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      results.push({ id: doc.id, ...data } as Appointment);
+    });
+    return results;
+  }
+  async getByStatus(status: AppointmentStatus): Promise<Appointment[]> {
+    const { getFirestore, collection, query, where, getDocs } = await import('firebase/firestore');
+    const db = getFirestore();
+    const appointmentsRef = collection(db, 'appointments');
+    const q = query(appointmentsRef, where('status', '==', status));
     const snapshot = await getDocs(q);
     const results: Appointment[] = [];
     snapshot.forEach(doc => {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import styles from "./notifications.module.css";
 import { useNotificationsLogic } from '@/presentation/hooks/useNotificationsLogic';
 import { trackEvent } from '@/presentation/analytics/gtag';
+import { UserRole } from '@/domain/entities/UserRole';
 
 
 function NotificationsPage() {
@@ -78,7 +79,7 @@ function NotificationsPage() {
                 </td>
                 <td className="px-3 py-3 align-middle text-center rounded-r-xl">
                   <div className="flex flex-row gap-2 justify-center items-center">
-                    {userRole === 'doctor' ? (
+                    {userRole === UserRole.Doctor ? (
                       <>
                         <button
                           className="transition-all duration-150 ease-in-out bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 w-24"
@@ -144,7 +145,7 @@ function NotificationsPage() {
             </div>
             <div className="text-sm text-gray-600"><span className="font-medium">Notes:</span> {appointment.notes || '-'}</div>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              {userRole === 'doctor' ? (
+              {userRole === UserRole.Doctor ? (
                 <>
                   <button
                     className="transition-all duration-150 ease-in-out bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-300 w-24"

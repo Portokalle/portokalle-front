@@ -99,7 +99,7 @@ export default function Dashboard() {
           </div>
           <AppointmentsTable
             appointments={appointments}
-            role={role || ""}
+            role={role}
             isAppointmentPast={isAppointmentPast}
             handleJoinCall={handleJoinCall}
             handlePayNow={handlePayNow}

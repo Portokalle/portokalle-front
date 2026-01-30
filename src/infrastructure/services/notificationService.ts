@@ -2,11 +2,12 @@ import { db } from '@/infrastructure/firebase/firebaseconfig';
 // import { auth } from '@/infrastructure/firebase/firebaseconfig';
 import { doc, getDoc, collection, updateDoc } from 'firebase/firestore';
 import { Appointment } from '@/domain/entities/Appointment';
+import { toUserRole, type UserRole } from '@/domain/entities/UserRole';
 
-export async function getUserRole(userId: string): Promise<string | null> {
+export async function getUserRole(userId: string): Promise<UserRole | null> {
   const userRef = doc(db, 'users', userId);
   const userSnap = await getDoc(userRef);
-  return userSnap.exists() ? userSnap.data().role : null;
+  return userSnap.exists() ? toUserRole(userSnap.data().role) : null;
 }
 
 export async function fetchAppointmentDetails(appointments: Appointment[]): Promise<Array<{ id: string; patientName: string | null; doctorName: string | null; preferredDate: string; notes: string }>> {

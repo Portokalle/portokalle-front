@@ -19,6 +19,7 @@ import { useAuth } from '@/presentation/context/AuthContext';
 import { getNavigationPaths, NavigationKey } from '@/presentation/store/navigationStore';
 import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
 import DashboardSidebar from '@/presentation/components/DashboardSidebar';
+import { UserRole } from '@/domain/entities/UserRole';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const initializedRef = useRef(false);
   useEffect(() => {
     if (!initializedRef.current && isAuthenticated && role && user && initializeAppointments) {
-      const isDoctor = role === 'doctor';
+      const isDoctor = role === UserRole.Doctor;
       initializeAppointments(user.uid, isDoctor);
       initializedRef.current = true;
     }
@@ -84,9 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navPaths = isAdminSection
     ? [
         { key: NavigationKey.Dashboard, name: 'dashboard', href: '/admin' },
-        { key: NavigationKey.Appointments, name: 'users', href: '/admin/users' },
         { key: NavigationKey.AppointmentHistory, name: 'notifications', href: '/admin/notifications' },
-        { key: NavigationKey.Profile, name: 'stats', href: '/admin/stats' },
       ]
     : getNavigationPaths(role);
   // Icon lookup for compact mapping instead of switch

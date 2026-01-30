@@ -2,6 +2,7 @@
 
 import { create } from 'zustand';
 import type { IVideoService } from '@/application/ports/IVideoService';
+import type { UserRole } from '@/domain/entities/UserRole';
 
 interface VideoState {
   isInCall: boolean;
@@ -12,7 +13,7 @@ interface VideoState {
   userName: string | null;
   roomCode: string | null;
   setAuthStatus: (isAuthenticated: boolean, userId: string | null, userName: string | null) => void;
-  generateRoomCodeAndStore: (params: { appointmentId: string, userId: string, role: string, userName: string }, service: IVideoService) => Promise<string>;
+  generateRoomCodeAndStore: (params: { appointmentId: string, userId: string, role: UserRole, userName: string }, service: IVideoService) => Promise<string>;
 }
 
 export const useVideoStore = create<VideoState>()((set) => ({

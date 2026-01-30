@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWith
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/infrastructure/firebase/firebaseconfig';
 import { testFirebaseConnection } from '@/infrastructure/services/firebaseTest';
+import { UserRole, toUserRole } from '@/domain/entities/UserRole';
 
 export class FirebaseAuthGateway implements IAuthGateway {
   onAuthStateChanged(callback: (user: AuthUser | null) => void): () => void {
@@ -20,12 +21,14 @@ export class FirebaseAuthGateway implements IAuthGateway {
     });
   }
 
-  async login(email: string, password: string): Promise<{ user: AuthUser; role?: string | null }> {
+  async login(email: string, password: string): Promise<{ user: AuthUser; role?: UserRole | null }> {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
     const userDoc = await getDoc(doc(db, 'users', user.uid));
-    const role = userDoc.exists() ? (userDoc.data()?.role as string | null) : 'patient';
+    const role = userDoc.exists()
+      ? (toUserRole(userDoc.data()?.role) ?? UserRole.Patient)
+      : UserRole.Patient;
 
     const idToken = await user.getIdToken();
     const res = await fetch('/api/auth/session', {

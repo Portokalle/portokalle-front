@@ -7,7 +7,7 @@ import { useAuth } from '@/presentation/context/AuthContext';
 import { useVideoStore } from '@/presentation/store/videoStore';
 import RoleGuard from '@/presentation/components/RoleGuard';
 import { AppointmentsTable } from '@/presentation/components/appointment/SharedAppointmentsTable';
-import { USER_ROLE_DOCTOR, USER_ROLE_PATIENT } from '@/domain/constants/userRoles';
+import { UserRole } from '@/domain/entities/UserRole';
 import { useDI } from '@/presentation/context/DIContext';
 import { trackEvent } from '@/presentation/analytics/gtag';
 
@@ -80,7 +80,7 @@ function AppointmentsPage() {
       const appointment = appointments.find(a => a.id === appointmentId);
       if (!appointment) throw new Error('Appointment not found');
       const patientName = appointment.patientName || user.name || 'Guest';
-      const role = isDoctor ? 'doctor' : 'patient';
+      const role = isDoctor ? UserRole.Doctor : UserRole.Patient;
       trackEvent('join_call', { appointment_id: appointmentId, role, source: 'appointments_page' });
       let roomCode = appointment.roomCode;
       let roomId = appointment.roomId;
@@ -118,7 +118,7 @@ function AppointmentsPage() {
           <h2 className="card-title text-lg md:text-2xl">Your Appointments</h2>
           <AppointmentsTable
             appointments={appointments}
-            role={isDoctor ? USER_ROLE_DOCTOR : USER_ROLE_PATIENT}
+            role={isDoctor ? UserRole.Doctor : UserRole.Patient}
             isAppointmentPast={isAppointmentPast}
             handleJoinCall={handleJoinCall}
             handlePayNow={(id, amount) => {
@@ -136,7 +136,7 @@ function AppointmentsPage() {
 
 export default function ProtectedAppointmentsPage() {
   return (
-    <RoleGuard allowedRoles={['doctor', 'patient']}>
+    <RoleGuard allowedRoles={[UserRole.Doctor, UserRole.Patient]}>
       <AppointmentsPage />
     </RoleGuard>
   );

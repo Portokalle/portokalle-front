@@ -35,7 +35,7 @@ export const useAppointmentStore = create<AppointmentState>((set, get) => ({
     set({ loading: true, error: null });
     try {
       const role = await service.getUserRole(userId);
-      set({ isDoctor: isDoctor(role as import("@/domain/entities/UserRole").UserRole), loading: false });
+      set({ isDoctor: isDoctor(role), loading: false });
     } catch {
       set({ error: "Failed to fetch user role", loading: false });
     }

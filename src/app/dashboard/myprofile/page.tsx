@@ -30,7 +30,7 @@ export default function MyProfile() {
       <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Profile Settings</h1>
       <MyProfileForm
         formData={formData}
-        role={role || ''}
+        role={role}
         handleInputChange={handleInputChange}
         handleAddField={handleAddField}
         handleRemoveField={handleRemoveField}

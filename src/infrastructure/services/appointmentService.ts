@@ -30,7 +30,7 @@ import type { AppointmentPayload } from "@/domain/entities/AppointmentPayload";
 import type { BookAppointmentPayload } from "@/domain/entities/BookAppointmentPayload";
 import { updateSlotStatus } from "@/infrastructure/services/slotService";
 import { SlotStatus } from "@/domain/entities/SlotStatus";
-import { USER_ROLE_PATIENT } from "@/domain/constants/userRoles";
+import { UserRole } from "@/domain/entities/UserRole";
 
 
 // Mark appointment as paid
@@ -80,12 +80,12 @@ export async function verifyStripePayment(appointmentId: string, setAppointmentP
 }
 
 
-export async function getUserRole(userId: string) {
+export async function getUserRole(userId: string): Promise<UserRole> {
   try {
     const user = await userRepository.getById(userId);
-    return user?.role ?? USER_ROLE_PATIENT;
+    return user?.role ?? UserRole.Patient;
   } catch {
-    return USER_ROLE_PATIENT;
+    return UserRole.Patient;
   }
 }
 

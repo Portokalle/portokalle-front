@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { UserRole } from '@/domain/entities/UserRole';
 
 // Accept the more specific union type for field names
 interface MyProfileFormData {
@@ -17,7 +18,7 @@ interface MyProfileFormData {
 
 interface MyProfileFormProps {
   formData: MyProfileFormData;
-  role: string;
+  role: UserRole | null;
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: "name" | "surname" | "email" | "phoneNumber" | "about" | "specializations" | "education", index?: number) => void;
   handleAddField: (field: "name" | "surname" | "email" | "phoneNumber" | "about" | "specializations" | "education") => void;
   handleRemoveField: (field: "name" | "surname" | "email" | "phoneNumber" | "about" | "specializations" | "education", index: number) => void;
@@ -55,7 +56,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-md rounded-lg p-6">
       {/* Profile Picture Preview & Upload for Doctors - Centered at Top */}
-      {role === "doctor" && (
+      {role === UserRole.Doctor && (
         <div className="flex flex-col items-center mb-6">
           <Image
             src={previewUrl || formData.profilePicture || "/img/profile_placeholder.png"}
@@ -119,7 +120,7 @@ const MyProfileForm: React.FC<MyProfileFormProps> = ({
         />
       </div>
     </div>
-    {role === "doctor" && (
+    {role === UserRole.Doctor && (
       <>
         <div>
     <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('doctorProfile')}</h2>

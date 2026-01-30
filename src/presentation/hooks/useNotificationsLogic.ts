@@ -4,12 +4,13 @@ import type { NavigationCoordinator } from '@/presentation/navigation/Navigation
 import { useAuth } from '@/presentation/context/AuthContext';
 import { useDI } from '@/presentation/context/DIContext';
 import { trackEvent } from '@/presentation/analytics/gtag';
+import { UserRole } from '@/domain/entities/UserRole';
 
 export function useNotificationsLogic(nav: NavigationCoordinator) {
   const { appointments, loading: isLoading, error, fetchAppointments } = useAppointmentStore();
   const { user, role, isAuthenticated } = useAuth();
   const { fetchAppointmentsUseCase, notificationService } = useDI();
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [appointmentDetails, setAppointmentDetails] = useState<
     { id: string; patientName: string | null; doctorName: string | null; preferredDate: string; notes: string }[]
   >([]);
@@ -27,7 +28,7 @@ export function useNotificationsLogic(nav: NavigationCoordinator) {
       if (!role) return;
       await fetchAppointments(
         user.uid,
-        role === 'doctor',
+        role === UserRole.Doctor,
         (userId: string, isDoctor: boolean) => fetchAppointmentsUseCase.execute(userId, isDoctor)
       );
     };
@@ -47,13 +48,13 @@ export function useNotificationsLogic(nav: NavigationCoordinator) {
   useEffect(() => {
     const fetchRelevantAppointments = async () => {
       if (!user?.uid) return;
-      if (userRole === 'doctor') {
+      if (userRole === UserRole.Doctor) {
         const pending = appointmentDetails.filter((appointment) => {
           const found = appointments.find((a) => a.id === appointment.id);
           return found?.status === 'pending' && !(found?.dismissedBy && found.dismissedBy[user.uid]);
         });
         setPendingAppointments(pending);
-      } else if (userRole === 'patient') {
+      } else if (userRole === UserRole.Patient) {
         const withStatus = appointmentDetails.map((appointment) => {
           const found = appointments.find((a) => a.id === appointment.id);
           return { ...appointment, status: found?.status || 'pending', doctorName: found?.doctorName || appointment.doctorName, dismissedBy: found?.dismissedBy };

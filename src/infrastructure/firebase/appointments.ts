@@ -1,7 +1,7 @@
 import type { Appointment } from '@/domain/models/Appointment';
 import { db } from '@/infrastructure/firebase/firebaseconfig';
 import { FirestoreCollections } from '@/infrastructure/firebase/FirestoreCollections';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, getCountFromServer, query, where } from 'firebase/firestore';
 
 export async function fetchAppointmentsForUser(id: string): Promise<Appointment[]> {
   const col = collection(db, FirestoreCollections.Appointments);
@@ -31,4 +31,18 @@ export async function fetchAppointmentsForDoctor(id: string): Promise<Appointmen
       timestamp: Number(data.timestamp as number) || 0,
     } satisfies Appointment;
   });
+}
+
+export async function fetchAppointmentCountForDoctor(id: string): Promise<number> {
+  const col = collection(db, FirestoreCollections.Appointments);
+  const q = query(col, where('doctorId', '==', id));
+  const countSnap = await getCountFromServer(q);
+  return countSnap.data().count || 0;
+}
+
+export async function fetchAppointmentCountForUser(id: string): Promise<number> {
+  const col = collection(db, FirestoreCollections.Appointments);
+  const q = query(col, where('userId', '==', id));
+  const countSnap = await getCountFromServer(q);
+  return countSnap.data().count || 0;
 }

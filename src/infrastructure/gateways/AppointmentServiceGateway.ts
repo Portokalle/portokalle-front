@@ -1,5 +1,6 @@
 import type { IAppointmentService } from '@/application/ports/IAppointmentService';
 import type { Appointment } from '@/domain/entities/Appointment';
+import type { UserRole } from '@/domain/entities/UserRole';
 import type { AppointmentPayload } from '@/domain/entities/AppointmentPayload';
 import type { BookAppointmentPayload } from '@/domain/entities/BookAppointmentPayload';
 import {
@@ -43,7 +44,7 @@ export class AppointmentServiceGateway implements IAppointmentService {
     return verifyAndUpdatePayment(sessionId, userId, isDoctor, setAppointmentPaidFn, fetchAppointmentsFn);
   }
 
-  getUserRole(userId: string): Promise<string> {
+  getUserRole(userId: string): Promise<UserRole> {
     return getUserRole(userId);
   }
 

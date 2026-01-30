@@ -6,6 +6,7 @@ import { Bars3Icon, XMarkIcon, PowerIcon, BellIcon } from '@heroicons/react/24/o
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/presentation/context/AuthContext';
 import { useDI } from '@/presentation/context/DIContext';
+import { UserRole } from '@/domain/entities/UserRole';
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
@@ -22,7 +23,7 @@ export default function DashboardSidebar({ sidebarOpen, setSidebarOpen, navItems
   const { notificationService, logoutSessionUseCase, sessionGateway } = useDI();
 
   useEffect(() => {
-    if (!user?.uid || role !== 'doctor') return;
+    if (!user?.uid || role !== UserRole.Doctor) return;
     const unsubscribe = notificationService.subscribePendingAppointments(user.uid, (items) => {
       setHasNewNotifications(items.length > 0);
     });

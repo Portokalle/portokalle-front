@@ -16,4 +16,5 @@ export interface Appointment {
 	roomId?: string; // 100ms room UUID
 	roomCode?: string; // 100ms prebuilt code
 	dismissedBy?: { [userId: string]: boolean }; // notification dismissal tracking
+	dismissedByAdmin?: boolean;
 }

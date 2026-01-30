@@ -1,4 +1,5 @@
 import type { Appointment } from '@/domain/entities/Appointment';
+import type { UserRole } from '@/domain/entities/UserRole';
 import type { AppointmentPayload } from '@/domain/entities/AppointmentPayload';
 import type { BookAppointmentPayload } from '@/domain/entities/BookAppointmentPayload';
 
@@ -14,7 +15,7 @@ export interface IAppointmentService {
     setAppointmentPaid: (id: string) => Promise<void>,
     fetchAppointments: (userId: string, isDoctor: boolean) => Promise<void>
   ): Promise<void>;
-  getUserRole(userId: string): Promise<string>;
+  getUserRole(userId: string): Promise<UserRole>;
   getAppointments(userId: string, isDoctor: boolean): Promise<Appointment[]>;
   bookAppointment(appointmentData: BookAppointmentPayload): Promise<{ id: string } & AppointmentPayload>;
   markSlotAsPending(doctorId: string, date: string, time: string): Promise<void>;

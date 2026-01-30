@@ -24,6 +24,7 @@ import { useDI } from '@/presentation/context/DIContext';
 import { useInitializeAppointments } from '@/presentation/store/appointmentStore';
 import { getNavigationPaths, NavigationKey } from '@/presentation/store/navigationStore';
 import { useNavigationCoordinator } from '@/presentation/navigation/NavigationCoordinator';
+import { UserRole } from '@/domain/entities/UserRole';
 
 type NavItem = { key: NavigationKey; name: string; href: string };
 
@@ -38,7 +39,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const initializedRef = useRef(false);
   useEffect(() => {
     if (!initializedRef.current && isAuthenticated && role && user && initializeAppointments) {
-      const isDoctor = role === 'doctor';
+      const isDoctor = role === UserRole.Doctor;
       initializeAppointments(user.uid, isDoctor);
       initializedRef.current = true;
     }
@@ -83,9 +84,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const navPaths: NavItem[] = isAdminSection
     ? [
         { key: NavigationKey.Dashboard, name: 'dashboard', href: '/admin' },
-        { key: NavigationKey.Appointments, name: 'users', href: '/admin/users' },
         { key: NavigationKey.AppointmentHistory, name: 'notifications', href: '/admin/notifications' },
-        { key: NavigationKey.Profile, name: 'stats', href: '/admin/stats' },
       ]
     : getNavigationPaths(role);
 

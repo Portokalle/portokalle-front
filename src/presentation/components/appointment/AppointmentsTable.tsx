@@ -2,13 +2,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import CenteredLoader from '../CenteredLoader';
 import { Appointment } from '@/domain/entities/Appointment';
-import { UserRole } from '@/domain/entities/UserRole';
+import { UserRole, toUserRole } from '@/domain/entities/UserRole';
 import { getAppointmentAction } from '@/presentation/utils/appointmentActionButton';
 import { DEFAULT_APPOINTMENT_PAYMENT_AMOUNT } from '@/domain/constants/paymentConfig';
 
 interface AppointmentsTableProps {
 	appointments: Appointment[];
-	role: string;
+	role: UserRole | null;
 	isAppointmentPast: (appointment: Appointment) => boolean;
 	handleJoinCall: (appointmentId: string) => void;
 	handlePayNow: (appointmentId: string, amount: number) => void;
@@ -40,7 +40,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 					<thead>
 						<tr>
 							<th>{t('date')}</th>
-							<th>{role === 'doctor' ? t('patient') : t('doctor')}</th>
+							<th>{role === UserRole.Doctor ? t('patient') : t('doctor')}</th>
 							<th>{t('type')}</th>
 							<th>{t('time')}</th>
 							<th>{t('notes')}</th>
@@ -61,19 +61,13 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 								})
 								.slice(0, maxRows)
 								.map((appointment) => {
-									// Helper to map string to UserRole enum
-									const toUserRole = (r: string): UserRole | undefined => {
-										return Object.values(UserRole).includes(r as UserRole)
-											? (r as UserRole)
-											: undefined;
-									};
 									const userRoleEnum = toUserRole(role);
 									const action = getAppointmentAction(appointment, isAppointmentPast, userRoleEnum);
 									return (
 										<tr key={appointment.id}>
 											<td>{appointment.preferredDate}</td>
 											<td>
-												{role === 'doctor'
+												{role === UserRole.Doctor
 													? appointment.patientName || 'N/A'
 													: (
 														<a
@@ -100,7 +94,7 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 											</td>
 											{showActions && (
 												<td>
-													{role !== 'doctor' && action.label === 'Pay Now' && !action.disabled && (
+													{role !== UserRole.Doctor && action.label === 'Pay Now' && !action.disabled && (
 														<button
 															className="bg-transparent hover:bg-orange-500 text-orange-700 font-semibold hover:text-white py-2 px-4 border border-orange-500 hover:border-transparent rounded-full"
 															onClick={() => handlePayNow(appointment.id, DEFAULT_APPOINTMENT_PAYMENT_AMOUNT)}
@@ -116,12 +110,12 @@ const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 															{t('joinNow')}
 														</button>
 													)}
-													{action.disabled && role === 'doctor' && (
+													{action.disabled && role === UserRole.Doctor && (
 														<span className="text-orange-500 font-semibold">
 															{t('waitingForPayment')}
 														</span>
 													)}
-													{action.disabled && role !== 'doctor' && (
+													{action.disabled && role !== UserRole.Doctor && (
 														<button
 															className="bg-gray-400 text-white font-bold py-2 px-4 rounded-full opacity-50 cursor-not-allowed"
 															disabled

@@ -2,13 +2,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import CenteredLoader from '../CenteredLoader';
 import { Appointment } from '@/domain/entities/Appointment';
-import { UserRole } from '@/domain/entities/UserRole';
+import { UserRole, toUserRole } from '@/domain/entities/UserRole';
 import { getAppointmentAction } from '@/presentation/utils/appointmentActionButton';
 import { DEFAULT_APPOINTMENT_PAYMENT_AMOUNT } from '@/domain/constants/paymentConfig';
 
 interface AppointmentsTableProps {
 	appointments: Appointment[];
-	role: string;
+	role: UserRole | null;
 	isAppointmentPast: (appointment: Appointment) => boolean;
 	handleJoinCall: (appointmentId: string) => void;
 	handlePayNow: (appointmentId: string, amount: number) => void;
@@ -40,7 +40,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 					<thead>
 						<tr>
 							<th>{t('date')}</th>
-							<th>{role === 'doctor' ? t('patient') : t('doctor')}</th>
+							<th>{role === UserRole.Doctor ? t('patient') : t('doctor')}</th>
 							<th>{t('type')}</th>
 							<th>{t('time')}</th>
 							<th>{t('notes')}</th>
@@ -61,19 +61,13 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 								})
 								.slice(0, maxRows)
 								.map((appointment) => {
-									// Helper to map string to UserRole enum
-									const toUserRole = (r: string): UserRole | undefined => {
-										return Object.values(UserRole).includes(r as UserRole)
-											? (r as UserRole)
-											: undefined;
-									};
 									const userRoleEnum = toUserRole(role);
 									const action = getAppointmentAction(appointment, isAppointmentPast, userRoleEnum);
 									return (
 										<tr key={appointment.id}>
 											<td>{appointment.preferredDate}</td>
 											<td>
-												{role === 'doctor'
+												{role === UserRole.Doctor
 													? appointment.patientName || 'N/A'
 													: (
 														<a
@@ -100,7 +94,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 											</td>
 											{showActions && (
 												<td>
-													{role !== 'doctor' && action.label === 'Pay Now' && !action.disabled && (
+													{role !== UserRole.Doctor && action.label === 'Pay Now' && !action.disabled && (
 														<button
 															className="bg-transparent hover:bg-orange-500 text-orange-700 font-semibold hover:text-white py-2 px-4 border border-orange-500 hover:border-transparent rounded-full"
 															onClick={() => handlePayNow(appointment.id, DEFAULT_APPOINTMENT_PAYMENT_AMOUNT)}
@@ -116,12 +110,12 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 															{t('joinNow')}
 														</button>
 													)}
-													{action.disabled && role === 'doctor' && (
+													{action.disabled && role === UserRole.Doctor && (
 														<span className="text-orange-500 font-semibold">
 															{t('waitingForPayment')}
 														</span>
 													)}
-													{action.disabled && role !== 'doctor' && (
+													{action.disabled && role !== UserRole.Doctor && (
 														<button
 															className="bg-gray-400 text-white font-bold py-2 px-4 rounded-full opacity-50 cursor-not-allowed"
 															disabled
@@ -156,7 +150,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 						})
 						.slice(0, maxRows)
 						.map((appointment) => {
-							const action = getAppointmentAction(appointment, isAppointmentPast, role as UserRole);
+							const action = getAppointmentAction(appointment, isAppointmentPast, role);
 							return (
 								<div key={appointment.id} className="rounded-xl shadow bg-white p-4 flex flex-col gap-2">
 									<div className="flex justify-between items-center">
@@ -164,7 +158,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 										<span className="text-xs text-gray-500">{appointment.preferredTime}</span>
 									</div>
 									<div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-										<span><span className="font-medium">{role === 'doctor' ? t('patientColon') : t('doctorColon')}</span> {role === 'doctor' ? appointment.patientName || 'N/A' : appointment.doctorName}</span>
+										<span><span className="font-medium">{role === UserRole.Doctor ? t('patientColon') : t('doctorColon')}</span> {role === UserRole.Doctor ? appointment.patientName || 'N/A' : appointment.doctorName}</span>
 										<span><span className="font-medium">{t('typeColon')}</span> {appointment.appointmentType}</span>
 									</div>
 									<div className="text-sm text-gray-600"><span className="font-medium">{t('notesColon')}</span> {appointment.notes}</div>
@@ -188,7 +182,7 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 										</span>
 										{showActions && (
 											<>
-												{role !== 'doctor' && action.label === 'Pay Now' && !action.disabled && (
+												{role !== UserRole.Doctor && action.label === 'Pay Now' && !action.disabled && (
 													<button
 														className="ml-auto bg-transparent hover:bg-orange-500 text-orange-700 font-semibold hover:text-white py-1 px-3 border border-orange-500 hover:border-transparent rounded-full text-xs"
 														onClick={() => handlePayNow(appointment.id, DEFAULT_APPOINTMENT_PAYMENT_AMOUNT)}
@@ -204,12 +198,12 @@ export const AppointmentsTable: React.FC<AppointmentsTableProps> = ({
 														{t('joinNow')}
 													</button>
 												)}
-												{action.disabled && role === 'doctor' && (
+												{action.disabled && role === UserRole.Doctor && (
 													<span className="text-orange-500 font-semibold">
 														{t('waitingForPayment')}
 													</span>
 												)}
-												{action.disabled && role !== 'doctor' && (
+												{action.disabled && role !== UserRole.Doctor && (
 													<button
 														className="ml-auto bg-gray-400 text-white font-bold py-1 px-3 rounded-full opacity-50 cursor-not-allowed text-xs"
 														disabled

@@ -33,4 +33,5 @@ export interface IAdminGateway {
   getUserAppointmentCount(userId: string): Promise<number>;
   getDoctorAppointmentCount(doctorId: string): Promise<number>;
   getUserRole(userId: string): Promise<UserRole | null>;
+  dismissAdminNotifications(appointmentIds: string[]): Promise<void>;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { UserRole } from '@/domain/entities/UserRole';
+import { UserRole, toUserRole } from '@/domain/entities/UserRole';
 import { useDI } from '@/presentation/context/DIContext';
 
 interface AuthContextType {
@@ -33,16 +33,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (typeof window === 'undefined') return null;
       try {
         const stored = localStorage.getItem('userRole');
-        if (stored && Object.values(UserRole).includes(stored as UserRole)) {
-          return stored as UserRole;
-        }
+        const parsed = toUserRole(stored);
+        if (parsed) return parsed;
       } catch {}
       const match = document.cookie.match(/(?:^|; )userRole=([^;]+)/);
       if (match) {
         const value = decodeURIComponent(match[1]);
-        if (Object.values(UserRole).includes(value as UserRole)) {
-          return value as UserRole;
-        }
+        const parsed = toUserRole(value);
+        if (parsed) return parsed;
       }
       return null;
     };

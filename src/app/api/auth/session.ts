@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import { SignJWT } from 'jose';
+import { UserRole, toUserRole } from '@/domain/entities/UserRole';
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,10 +26,11 @@ export async function POST(req: NextRequest) {
     }
     const encoder = new TextEncoder();
     const alg = 'HS256';
+    const resolvedRole = toUserRole(decoded.role) ?? UserRole.Patient;
     const sessionJwt = await new SignJWT({
       uid: decoded.uid,
       email: decoded.email,
-      role: decoded.role || 'user',
+      role: resolvedRole,
     })
       .setProtectedHeader({ alg })
       .setExpirationTime('30m')
