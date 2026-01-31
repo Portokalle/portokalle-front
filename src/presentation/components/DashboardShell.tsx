@@ -148,8 +148,8 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             <div className="flex items-center gap-2 h-12" />
           </div>
         </header>
-        <main className="p-6 md:p-10 max-w-5xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-10 min-h-[60vh] text-gray-800">
+        <main className={isAdminSection ? "admin-shell-main" : "dashboard-shell-main"}>
+          <div className={isAdminSection ? "admin-shell-card" : "dashboard-shell-card"}>
             {children}
           </div>
         </main>

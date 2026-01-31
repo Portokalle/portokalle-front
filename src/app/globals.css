@@ -124,3 +124,75 @@ h1, h2, h3, h4, h5, h6 {
     --foreground: #ffffff;
   }
 }
+
+@layer components {
+  .dashboard-shell-main {
+    @apply p-6 md:p-10 max-w-5xl mx-auto w-full;
+  }
+  .dashboard-shell-card {
+    @apply bg-white rounded-2xl shadow-sm p-6 md:p-10 min-h-[60vh] text-gray-800;
+  }
+  .admin-shell-main {
+    @apply p-4 md:p-6 w-full max-w-none mx-0;
+  }
+  .admin-shell-card {
+    @apply bg-white rounded-2xl shadow-sm p-4 md:p-6 min-h-[60vh] text-gray-800 w-full;
+  }
+  .admin-page {
+    @apply w-full;
+  }
+  .admin-page-title {
+    @apply text-2xl font-semibold text-gray-900;
+  }
+  .admin-search-input {
+    @apply w-full max-w-md border border-gray-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200;
+  }
+  .admin-users-table {
+    @apply w-full;
+  }
+  .admin-users-table .table {
+    @apply w-full bg-white text-sm;
+  }
+  .admin-users-table .table thead th {
+    @apply text-gray-500 font-medium;
+  }
+  .admin-users-table .table tbody td {
+    @apply text-gray-800;
+  }
+  .admin-user-modal-overlay {
+    @apply fixed inset-0 flex items-center justify-center bg-black/50 z-50 px-2;
+  }
+  .admin-user-modal {
+    @apply bg-white rounded-lg shadow-lg w-[95vw] max-w-3xl max-h-[85vh] overflow-y-auto p-6 relative;
+  }
+  .admin-user-modal-header {
+    @apply flex items-center justify-between gap-3 mb-3;
+  }
+  .admin-user-modal-actions {
+    @apply flex flex-wrap gap-2 mt-4;
+  }
+  .admin-user-btn-primary {
+    @apply w-full rounded-md bg-orange-500 text-white text-sm font-semibold px-4 py-2 hover:bg-orange-600;
+  }
+  .admin-user-btn-secondary {
+    @apply w-full rounded-md border border-gray-200 text-gray-700 text-sm font-semibold px-4 py-2 hover:bg-gray-50;
+  }
+  .admin-user-btn-link {
+    @apply w-full rounded-md text-gray-600 text-sm font-medium px-4 py-2 hover:bg-gray-50;
+  }
+  .admin-user-btn-close {
+    @apply rounded-md text-gray-500 text-sm font-medium px-3 py-1 hover:bg-gray-100;
+  }
+  .admin-user-specialization-row {
+    @apply flex items-center gap-2;
+  }
+  .admin-user-reset-row {
+    @apply flex flex-col md:flex-row gap-2;
+  }
+  .admin-user-reset-link {
+    @apply w-full border border-gray-200 rounded-md px-3 py-2 text-xs text-gray-700 bg-gray-50;
+  }
+  .admin-user-reset-copy {
+    @apply w-full md:w-auto rounded-md border border-gray-200 text-gray-700 text-xs font-semibold px-3 py-2 hover:bg-gray-50;
+  }
+}
