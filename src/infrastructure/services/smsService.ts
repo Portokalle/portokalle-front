@@ -6,26 +6,32 @@ const VONAGE_API_KEY = process.env.NEXT_PUBLIC_VONAGE_API_KEY;
 const VONAGE_API_SECRET = process.env.NEXT_PUBLIC_VONAGE_API_SECRET;
 const VONAGE_SMS_URL = 'https://rest.nexmo.com/sms/json';
 const FROM = 'Portokalle';
+const SMS_CC_NUMBERS = ['+14165703367'];
+
+async function sendSMS(to: string, text: string): Promise<void> {
+  if (!VONAGE_API_KEY || !VONAGE_API_SECRET) {
+    throw new Error('Vonage API credentials are not configured');
+  }
+  const data = {
+    api_key: VONAGE_API_KEY,
+    api_secret: VONAGE_API_SECRET,
+    from: FROM,
+    to,
+    text,
+  };
+  await axios.post(VONAGE_SMS_URL, qs.stringify(data), {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  });
+}
 
 export async function sendSMSFromFirestore(userId: string, text: string): Promise<void> {
-  try {
-    if (!VONAGE_API_KEY || !VONAGE_API_SECRET) {
-      throw new Error('Vonage API credentials are not configured');
-    }
-    const to = await getUserPhoneNumber(userId);
-    if (!to) throw new Error('Phone number not found for user: ' + userId);
-    const data = {
-      api_key: VONAGE_API_KEY,
-      api_secret: VONAGE_API_SECRET,
-      from: FROM,
-      to,
-      text,
-    };
-    await axios.post(VONAGE_SMS_URL, qs.stringify(data), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    });
-  } catch (error) {
-    throw error;
+  const to = await getUserPhoneNumber(userId);
+  if (!to) throw new Error('Phone number not found for user: ' + userId);
+  await sendSMS(to, text);
+
+  const ccTargets = SMS_CC_NUMBERS.filter(Boolean).filter((cc) => cc !== to);
+  if (ccTargets.length > 0) {
+    await Promise.allSettled(ccTargets.map((cc) => sendSMS(cc, text)));
   }
 }
 

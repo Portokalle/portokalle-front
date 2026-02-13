@@ -22,7 +22,6 @@ import { getDefaultPatientName, getDefaultStatus } from "@/shared/utils/userUtil
 import { appointmentRepository } from '@/infrastructure/appointmentRepository';
 import { getAuth } from "firebase/auth";
 import { createPaymentIntent, verifyPayment } from "@/infrastructure/http/apiClient+payment";
-import { getUserPhoneNumber } from "@/infrastructure/services/userService";
 import { sendDoctorAppointmentRequestSMS } from "@/infrastructure/services/smsService";
 
 import { userRepository } from '@/infrastructure/userRepository';
@@ -104,8 +103,7 @@ async function createAndNotifyAppointment(payload: AppointmentPayload): Promise<
   };
   try {
     const created = await appointmentRepository.create(appointment);
-    const doctorPhone = await getUserPhoneNumber(payload.doctorId);
-    if (doctorPhone) await sendDoctorAppointmentRequestSMS(doctorPhone, payload.patientName);
+    await sendDoctorAppointmentRequestSMS(payload.doctorId, payload.patientName);
     // Return as AppointmentPayload (status as string)
     return { id: created.id, ...payload };
   } catch (error) {

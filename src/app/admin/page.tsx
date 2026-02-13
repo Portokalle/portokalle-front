@@ -23,6 +23,8 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -76,6 +78,7 @@ export default function AdminPage() {
         email: next.email,
         role: next.role,
         approvalStatus: next.approvalStatus,
+        profilePicture: next.profilePicture,
       });
       if (next.role === UserRole.Doctor) {
         await adminGateway.updateDoctorFields(next.id, {
@@ -112,6 +115,72 @@ export default function AdminPage() {
   useEffect(() => {
     setResetLink(null);
   }, [selected?.id]);
+
+  const handleDoctorPhotoUpload = async (user: AdminUser, file: File) => {
+    setPhotoUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('fileName', file.name);
+      formData.append('fileType', file.type);
+
+      const uploadRes = await fetch('/api/profile/upload-profile-picture', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        throw new Error(errorText || t('failedToUploadPhoto', 'Failed to upload photo'));
+      }
+
+      const payload = (await uploadRes.json().catch(() => ({}))) as { publicUrl?: string };
+      if (!payload.publicUrl) {
+        throw new Error(t('failedToUploadPhoto', 'Failed to upload photo'));
+      }
+
+      await adminGateway.updateUserFields({ id: user.id, profilePicture: payload.publicUrl });
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, profilePicture: payload.publicUrl } : u)));
+      setSelected((prev) => (prev && prev.id === user.id ? { ...prev, profilePicture: payload.publicUrl } : prev));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('failedToUploadPhoto', 'Failed to upload photo'));
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const handleDoctorPhotoRemove = async (user: AdminUser) => {
+    if (!user.profilePicture) return;
+    setPhotoUploading(true);
+    setError(null);
+    try {
+      await adminGateway.updateUserFields({ id: user.id, profilePicture: '' });
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, profilePicture: '' } : u)));
+      setSelected((prev) => (prev && prev.id === user.id ? { ...prev, profilePicture: '' } : prev));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('failedToRemovePhoto', 'Failed to remove photo'));
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const handleDeleteUser = async (user: AdminUser) => {
+    const displayName = `${user.name ?? ''} ${user.surname ?? ''}`.trim() || user.email || user.id;
+    const confirmed = window.confirm(`Delete ${displayName}? This will permanently remove the account.`);
+    if (!confirmed) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await adminGateway.deleteUserAccount(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      setSelected(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('failedToDeleteUser', 'Failed to delete user'));
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <ToastProvider>
@@ -165,9 +234,14 @@ export default function AdminPage() {
                 onChange={setSelected}
                 onSave={handleSave}
                 onResetPassword={handleResetPassword}
+                onUploadDoctorPhoto={handleDoctorPhotoUpload}
+                onRemoveDoctorPhoto={handleDoctorPhotoRemove}
+                onDeleteUser={handleDeleteUser}
                 saving={saving}
                 resetLoading={resetLoading}
                 resetLink={resetLink}
+                photoUploading={photoUploading}
+                deleting={deleting}
               />
             )}
           </Modal>
@@ -182,17 +256,27 @@ function UserEditSidebar({
   onChange,
   onSave,
   onResetPassword,
+  onUploadDoctorPhoto,
+  onRemoveDoctorPhoto,
+  onDeleteUser,
   saving,
   resetLoading,
   resetLink,
+  photoUploading,
+  deleting,
 }: {
   user: AdminUser;
   onChange: (next: AdminUser) => void;
   onSave: (next: AdminUser) => void;
   onResetPassword: (user: AdminUser) => void;
+  onUploadDoctorPhoto: (user: AdminUser, file: File) => void;
+  onRemoveDoctorPhoto: (user: AdminUser) => void;
+  onDeleteUser: (user: AdminUser) => void;
   saving: boolean;
   resetLoading: boolean;
   resetLink: string | null;
+  photoUploading: boolean;
+  deleting: boolean;
 }) {
   const specializations = Array.isArray(user.specializations) && user.specializations.length > 0
     ? user.specializations
@@ -257,6 +341,38 @@ function UserEditSidebar({
       </div>
       {user.role === UserRole.Doctor && (
         <>
+          <div>
+            <label className="label"><span className="label-text">Profile photo</span></label>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <img
+                src={user.profilePicture || "/img/profile_placeholder.png"}
+                alt={`${user.name ?? ''} ${user.surname ?? ''}`.trim() || 'Doctor'}
+                className="h-16 w-16 rounded-full object-cover border border-gray-200"
+              />
+              <div className="flex-1 space-y-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="file-input file-input-bordered w-full"
+                  disabled={photoUploading}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    onUploadDoctorPhoto(user, file);
+                    e.currentTarget.value = '';
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost w-full"
+                  disabled={!user.profilePicture || photoUploading}
+                  onClick={() => onRemoveDoctorPhoto(user)}
+                >
+                  {photoUploading ? 'Updating...' : 'Remove photo'}
+                </button>
+              </div>
+            </div>
+          </div>
           <div>
             <label className="label"><span className="label-text">Specialization</span></label>
             <div className="space-y-2">
@@ -340,6 +456,15 @@ function UserEditSidebar({
         >
           {resetLoading ? 'Generating...' : 'Reset password'}
         </button>
+        {user.role === UserRole.Doctor && (
+          <button
+            className="admin-user-btn-danger"
+            onClick={() => onDeleteUser(user)}
+            disabled={deleting}
+          >
+            {deleting ? 'Deleting...' : 'Delete doctor profile'}
+          </button>
+        )}
         {resetLink && (
           <a className="admin-user-btn-link" href={resetLink} target="_blank" rel="noreferrer">
             Open reset link

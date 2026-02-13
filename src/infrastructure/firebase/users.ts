@@ -5,7 +5,7 @@ import { FirestoreCollections } from '@/infrastructure/firebase/FirestoreCollect
 import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, limit, startAfter, getCountFromServer, updateDoc, QueryDocumentSnapshot } from 'firebase/firestore';
 import type { PaginationCursor } from '@/shared/types/PaginationCursor';
 
-export async function fetchUsers(): Promise<(User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' })[]> {
+export async function fetchUsers(): Promise<(User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string })[]> {
   const usersCol = collection(db, FirestoreCollections.Users);
   const snap = await getDocs(usersCol);
   return snap.docs.map((d) => {
@@ -20,13 +20,14 @@ export async function fetchUsers(): Promise<(User & { name?: string; surname?: s
       name: (data.name as string) || '',
       surname: (data.surname as string) || '',
       approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
-    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' };
+      profilePicture: (data.profilePicture as string) || '',
+    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string };
     return extended;
   });
 }
 
 export type UsersPage = {
-  items: (User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' })[];
+  items: (User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string })[];
   total: number;
   nextCursor?: PaginationCursor; // Opaque cursor for startAfter
 };
@@ -53,7 +54,8 @@ export async function fetchUsersPage(pageSize: number, cursor?: PaginationCursor
       name: (data.name as string) || '',
       surname: (data.surname as string) || '',
       approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
-    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved' };
+      profilePicture: (data.profilePicture as string) || '',
+    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string };
     return extended;
   });
   const nextCursor: PaginationCursor | undefined = snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : undefined;

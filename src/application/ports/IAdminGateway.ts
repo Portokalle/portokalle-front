@@ -9,6 +9,7 @@ export type AdminUser = User & {
   specialization?: string;
   bio?: string;
   specializations?: string[];
+  profilePicture?: string;
 };
 
 export type UsersPage = {
