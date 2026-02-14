@@ -1,8 +1,8 @@
 import type { User } from '@/domain/entities/User';
 import { UserRole } from '@/domain/entities/UserRole';
-import { fetchUsers, fetchUserById, fetchDoctorById, fetchUsersPage, UsersPage, upsertUser, updateDoctorProfile } from '@/infrastructure/firebase/users';
+import { fetchUsers, fetchUserById, fetchDoctorById, fetchUsersPage, UsersPage } from '@/infrastructure/firebase/users';
 import type { PaginationCursor } from '@/shared/types/PaginationCursor';
-import { apiCreateAdmin, apiResetPassword, apiDeleteUser } from '@/infrastructure/http/admin';
+import { apiCreateAdmin, apiResetPassword, apiDeleteUser, apiUpdateUser } from '@/infrastructure/http/admin';
 import { fetchAppointmentCountForUser, fetchAppointmentCountForDoctor } from '@/infrastructure/firebase/appointments';
 
 export async function getAllUsers(): Promise<User[]> {
@@ -48,9 +48,19 @@ export async function deleteUserAccount(userId: string): Promise<void> {
 }
 
 export async function updateUserFields(user: Partial<User> & { id: string } & Record<string, unknown>): Promise<void> {
-  await upsertUser(user);
+  const userFields = {
+    name: typeof user.name === 'string' ? user.name : undefined,
+    surname: typeof user.surname === 'string' ? user.surname : undefined,
+    email: typeof user.email === 'string' ? user.email : undefined,
+    role: typeof user.role === 'string' ? user.role : undefined,
+    approvalStatus: (user as { approvalStatus?: 'pending' | 'approved' }).approvalStatus,
+    profilePicture: typeof (user as { profilePicture?: string }).profilePicture === 'string'
+      ? (user as { profilePicture?: string }).profilePicture
+      : undefined,
+  };
+  await apiUpdateUser({ id: user.id, userFields });
 }
 
 export async function updateDoctorFields(id: string, fields: { specialization?: string; bio?: string; specializations?: string[] }): Promise<void> {
-  await updateDoctorProfile(id, fields);
+  await apiUpdateUser({ id, doctorFields: fields });
 }

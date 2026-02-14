@@ -7,7 +7,6 @@ import { FirestoreCollections } from '@/infrastructure/firebase/FirestoreCollect
 // ------------------------
 // Initialize Admin SDK once using FIREBASE_SERVICE_ACCOUNT environment variable
 if (!admin.apps.length) {
-  let serviceAccount;
   try {
     const svcEnv = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (!svcEnv) throw new Error('FIREBASE_SERVICE_ACCOUNT env is not set');
@@ -15,19 +14,11 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(svc),
     });
-    const envVar = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (!envVar) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT environment variable is not set.');
-    }
-    serviceAccount = JSON.parse(envVar);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'FIREBASE_SERVICE_ACCOUNT env is not valid JSON.';
     console.error(message);
     throw new Error(message);
   }
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
 }
 // ------------------------
 
@@ -37,6 +28,7 @@ type UserFields = {
   role?: string;
   email?: string;
   approvalStatus?: 'pending' | 'approved';
+  profilePicture?: string;
 };
 
 type DoctorFields = {
@@ -82,9 +74,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Handle doctor fields
     if (doctorFields && hasKeys(doctorFields)) {
       const safeDoc = sanitizeDoctorFields(doctorFields);
-      await db
-        .collection(FirestoreCollections.Users)
-        .doc(id)
+      const userRef = db.collection(FirestoreCollections.Users).doc(id);
+      await userRef.set(safeDoc, { merge: true });
+      await userRef
         .collection(FirestoreCollections.Doctors)
         .doc(id)
         .set(safeDoc, { merge: true });
@@ -109,6 +101,7 @@ function sanitizeUserFields(fields: UserFields): Record<string, unknown> {
   if (fields.email !== undefined) out.email = (fields.email ?? '').trim();
   if (fields.role !== undefined) out.role = (fields.role ?? 'user').trim();
   if (fields.approvalStatus !== undefined) out.approvalStatus = fields.approvalStatus;
+  if (fields.profilePicture !== undefined) out.profilePicture = (fields.profilePicture ?? '').trim();
   return out;
 }
 

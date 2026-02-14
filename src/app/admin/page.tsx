@@ -278,6 +278,21 @@ function UserEditSidebar({
   photoUploading: boolean;
   deleting: boolean;
 }) {
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPhotoPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, [user.id, user.profilePicture]);
+
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    };
+  }, [photoPreviewUrl]);
+
   const specializations = Array.isArray(user.specializations) && user.specializations.length > 0
     ? user.specializations
     : (user.specialization ? [user.specialization] : []);
@@ -345,7 +360,7 @@ function UserEditSidebar({
             <label className="label"><span className="label-text">Profile photo</span></label>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <img
-                src={user.profilePicture || "/img/profile_placeholder.png"}
+                src={photoPreviewUrl || user.profilePicture || "/img/profile_placeholder.png"}
                 alt={`${user.name ?? ''} ${user.surname ?? ''}`.trim() || 'Doctor'}
                 className="h-16 w-16 rounded-full object-cover border border-gray-200"
               />
@@ -358,6 +373,11 @@ function UserEditSidebar({
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
+                    const previewUrl = URL.createObjectURL(file);
+                    setPhotoPreviewUrl((prev) => {
+                      if (prev) URL.revokeObjectURL(prev);
+                      return previewUrl;
+                    });
                     onUploadDoctorPhoto(user, file);
                     e.currentTarget.value = '';
                   }}
@@ -365,7 +385,7 @@ function UserEditSidebar({
                 <button
                   type="button"
                   className="btn btn-ghost w-full"
-                  disabled={!user.profilePicture || photoUploading}
+                  disabled={(!user.profilePicture && !photoPreviewUrl) || photoUploading}
                   onClick={() => onRemoveDoctorPhoto(user)}
                 >
                   {photoUploading ? 'Updating...' : 'Remove photo'}

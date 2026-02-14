@@ -1,4 +1,5 @@
 import type { UserRole } from '@/domain/entities/UserRole';
+import { apiClient } from '@/infrastructure/http/apiClient';
 
 export async function apiCreateAdmin(payload: { name: string; surname: string; email: string; password: string }) {
   const res = await fetch('/api/admin/create', {
@@ -46,4 +47,23 @@ export async function apiDismissAppointments(appointmentIds: string[]) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Failed to dismiss appointments');
   return data as { ok: boolean };
+}
+
+export async function apiUpdateUser(payload: {
+  id: string;
+  userFields?: {
+    name?: string;
+    surname?: string;
+    role?: string;
+    email?: string;
+    approvalStatus?: 'pending' | 'approved';
+    profilePicture?: string;
+  };
+  doctorFields?: { specialization?: string; bio?: string; specializations?: string[] };
+}) {
+  const res = await apiClient.post<{ ok: boolean; error?: string }>('/api/admin/update-user', payload);
+  if (res.status !== 200 || !res.data?.ok) {
+    throw new Error(res.data?.error || 'Failed to update user');
+  }
+  return res.data;
 }
