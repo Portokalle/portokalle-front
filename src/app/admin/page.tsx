@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<AdminUser | null>(null);
+  const [roleFilter, setRoleFilter] = useState<'all' | UserRole>('all');
   const [saving, setSaving] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
   const [resetLink, setResetLink] = useState<string | null>(null);
@@ -56,6 +57,11 @@ export default function AdminPage() {
       return name.includes(q) || email.includes(q) || role.includes(q);
     });
   }, [users, search]);
+
+  const visibleUsers = useMemo(() => {
+    if (roleFilter === 'all') return filteredUsers;
+    return filteredUsers.filter((u) => u.role === roleFilter);
+  }, [filteredUsers, roleFilter]);
 
   const columns: Column<AdminUser>[] = [
     { key: 'name', header: t('name', 'Name') },
@@ -196,11 +202,21 @@ export default function AdminPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            <select
+              className="select select-bordered w-full md:w-48"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as 'all' | UserRole)}
+            >
+              <option value="all">{t('allUsers', 'All users')}</option>
+              <option value={UserRole.Doctor}>{t('doctors', 'Doctors')}</option>
+              <option value={UserRole.Patient}>{t('patients', 'Patients')}</option>
+              <option value={UserRole.Admin}>{t('admins', 'Admins')}</option>
+            </select>
           </div>
           {error && <div className="text-red-600 mb-3">{error}</div>}
           <div className="admin-users-table">
             <GenericTable
-              data={filteredUsers}
+              data={visibleUsers}
               columns={columns}
               loading={loading}
               page={page}
