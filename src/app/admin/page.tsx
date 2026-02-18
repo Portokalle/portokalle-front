@@ -53,8 +53,9 @@ export default function AdminPage() {
     return users.filter((u) => {
       const name = `${u.name || ''} ${u.surname || ''}`.trim().toLowerCase();
       const email = (u.email || '').toLowerCase();
+      const phoneNumber = (u.phoneNumber || '').toLowerCase();
       const role = (u.role || '').toString().toLowerCase();
-      return name.includes(q) || email.includes(q) || role.includes(q);
+      return name.includes(q) || email.includes(q) || phoneNumber.includes(q) || role.includes(q);
     });
   }, [users, search]);
 
@@ -67,6 +68,7 @@ export default function AdminPage() {
     { key: 'name', header: t('name', 'Name') },
     { key: 'surname', header: t('surname', 'Surname') },
     { key: 'email', header: t('email', 'Email') },
+    { key: 'phoneNumber', header: t('phoneNumber', 'Phone Number') },
     { key: 'role', header: t('role', 'Role') },
     { key: 'approvalStatus', header: t('status', 'Status') },
   ];
@@ -82,6 +84,7 @@ export default function AdminPage() {
         name: next.name,
         surname: next.surname,
         email: next.email,
+        phoneNumber: next.phoneNumber,
         role: next.role,
         approvalStatus: next.approvalStatus,
         profilePicture: next.profilePicture,
@@ -294,6 +297,7 @@ function UserEditSidebar({
   photoUploading: boolean;
   deleting: boolean;
 }) {
+  const { t } = useTranslation();
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -345,6 +349,15 @@ function UserEditSidebar({
           className="input input-bordered w-full"
           value={user.email ?? ''}
           onChange={(e) => onChange({ ...user, email: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="label"><span className="label-text">{t('phoneNumber', 'Phone Number')}</span></label>
+        <input
+          type="tel"
+          className="input input-bordered w-full"
+          value={user.phoneNumber ?? ''}
+          onChange={(e) => onChange({ ...user, phoneNumber: e.target.value })}
         />
       </div>
       <div>
@@ -492,15 +505,13 @@ function UserEditSidebar({
         >
           {resetLoading ? 'Generating...' : 'Reset password'}
         </button>
-        {user.role === UserRole.Doctor && (
-          <button
-            className="admin-user-btn-danger"
-            onClick={() => onDeleteUser(user)}
-            disabled={deleting}
-          >
-            {deleting ? 'Deleting...' : 'Delete doctor profile'}
-          </button>
-        )}
+        <button
+          className="admin-user-btn-danger"
+          onClick={() => onDeleteUser(user)}
+          disabled={deleting}
+        >
+          {deleting ? 'Deleting...' : 'Delete user'}
+        </button>
         {resetLink && (
           <a className="admin-user-btn-link" href={resetLink} target="_blank" rel="noreferrer">
             Open reset link

@@ -2,6 +2,27 @@
 
 A Next.js frontend application.
 
+## Architecture Overview
+
+- **Frontend**: Next.js (App Router + Pages API routes).
+- **Server**: Node.js runtime via `next dev` / `next start`, with server-side API routes in `pages/api/*` and `src/app/api/*`.
+- **Database**: Firebase Firestore.
+- **Auth**: Firebase Authentication (client SDK) + Admin SDK for privileged operations in API routes.
+- **Analytics**: Google Analytics (gtag) via `NEXT_PUBLIC_GA_ID`.
+- **Images**: DigitalOcean Spaces (S3-compatible) for profile photos.
+
+## Image Storage (Profile Photos)
+
+Profile photo uploads are handled by `pages/api/profile/upload-profile-picture.ts` and stored in **DigitalOcean Spaces** (S3-compatible).
+
+Environment variables:
+- `DO_SPACES_KEY`
+- `DO_SPACES_SECRET`
+- `DO_SPACES_BUCKET`
+- Region: `fra1` (see `pages/api/profile/upload-profile-picture.ts`)
+
+The uploaded public URL is stored on the user document as `profilePicture` in Firestore.
+
 ## Prerequisites
 
 - Node.js (v18 or higher recommended)
@@ -54,6 +75,12 @@ The project uses two environment files:
 - `.env.production` - Used for production builds
 
 Make sure these files are properly configured before building or deploying.
+
+Key variables used by the app:
+- **Firebase (client SDK)**: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`, `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`, `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`
+- **Firebase Admin (server SDK)**: `FIREBASE_SERVICE_ACCOUNT` (JSON string)
+- **Google Analytics**: `NEXT_PUBLIC_GA_ID`
+- **DigitalOcean Spaces**: `DO_SPACES_KEY`, `DO_SPACES_SECRET`, `DO_SPACES_BUCKET`
 
 ## Deployment
 

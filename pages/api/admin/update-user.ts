@@ -27,6 +27,7 @@ type UserFields = {
   surname?: string;
   role?: string;
   email?: string;
+  phoneNumber?: string;
   approvalStatus?: 'pending' | 'approved';
   profilePicture?: string;
 };
@@ -99,6 +100,7 @@ function sanitizeUserFields(fields: UserFields): Record<string, unknown> {
   if (fields.name !== undefined) out.name = (fields.name ?? '').trim();
   if (fields.surname !== undefined) out.surname = (fields.surname ?? '').trim();
   if (fields.email !== undefined) out.email = (fields.email ?? '').trim();
+  if (fields.phoneNumber !== undefined) out.phoneNumber = (fields.phoneNumber ?? '').trim();
   if (fields.role !== undefined) out.role = (fields.role ?? 'user').trim();
   if (fields.approvalStatus !== undefined) out.approvalStatus = fields.approvalStatus;
   if (fields.profilePicture !== undefined) out.profilePicture = (fields.profilePicture ?? '').trim();

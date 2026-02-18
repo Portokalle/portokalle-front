@@ -5,6 +5,7 @@ import type { PaginationCursor } from '@/shared/types/PaginationCursor';
 export type AdminUser = User & {
   name?: string;
   surname?: string;
+  phoneNumber?: string;
   approvalStatus?: 'pending' | 'approved';
   specialization?: string;
   bio?: string;

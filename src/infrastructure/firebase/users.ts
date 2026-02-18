@@ -5,7 +5,7 @@ import { FirestoreCollections } from '@/infrastructure/firebase/FirestoreCollect
 import { collection, getDocs, doc, getDoc, setDoc, deleteDoc, query, orderBy, limit, startAfter, getCountFromServer, updateDoc, QueryDocumentSnapshot } from 'firebase/firestore';
 import type { PaginationCursor } from '@/shared/types/PaginationCursor';
 
-export async function fetchUsers(): Promise<(User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string })[]> {
+export async function fetchUsers(): Promise<(User & { name?: string; surname?: string; phoneNumber?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string })[]> {
   const usersCol = collection(db, FirestoreCollections.Users);
   const snap = await getDocs(usersCol);
   return snap.docs.map((d) => {
@@ -19,15 +19,16 @@ export async function fetchUsers(): Promise<(User & { name?: string; surname?: s
       ...base,
       name: (data.name as string) || '',
       surname: (data.surname as string) || '',
+      phoneNumber: (data.phoneNumber as string) || '',
       approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
       profilePicture: (data.profilePicture as string) || '',
-    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string };
+    } as User & { name?: string; surname?: string; phoneNumber?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string };
     return extended;
   });
 }
 
 export type UsersPage = {
-  items: (User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string })[];
+  items: (User & { name?: string; surname?: string; phoneNumber?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string })[];
   total: number;
   nextCursor?: PaginationCursor; // Opaque cursor for startAfter
 };
@@ -53,16 +54,17 @@ export async function fetchUsersPage(pageSize: number, cursor?: PaginationCursor
       ...base,
       name: (data.name as string) || '',
       surname: (data.surname as string) || '',
+      phoneNumber: (data.phoneNumber as string) || '',
       approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
       profilePicture: (data.profilePicture as string) || '',
-    } as User & { name?: string; surname?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string };
+    } as User & { name?: string; surname?: string; phoneNumber?: string; approvalStatus?: 'pending' | 'approved'; profilePicture?: string };
     return extended;
   });
   const nextCursor: PaginationCursor | undefined = snap.docs.length === pageSize ? snap.docs[snap.docs.length - 1] : undefined;
   return { items, total: countSnap.data().count, nextCursor };
 }
 
-export async function fetchUserById(id: string): Promise<(User & { approvalStatus?: 'pending' | 'approved' }) | null> {
+export async function fetchUserById(id: string): Promise<(User & { phoneNumber?: string; approvalStatus?: 'pending' | 'approved' }) | null> {
   const ref = doc(db, FirestoreCollections.Users, id);
   const snap = await getDoc(ref);
   if (!snap.exists()) return null;
@@ -71,8 +73,9 @@ export async function fetchUserById(id: string): Promise<(User & { approvalStatu
     id,
     email: (data.email as string) || '',
     role: (data.role as UserRole) || UserRole.Patient,
+    phoneNumber: (data.phoneNumber as string) || '',
     approvalStatus: (data.approvalStatus as 'pending' | 'approved' | undefined),
-  } as User & { approvalStatus?: 'pending' | 'approved' };
+  } as User & { phoneNumber?: string; approvalStatus?: 'pending' | 'approved' };
 }
 
 export async function fetchDoctorById(id: string): Promise<(User & { name?: string; surname?: string; specialization?: string; bio?: string }) | null> {
@@ -87,6 +90,7 @@ export async function fetchDoctorById(id: string): Promise<(User & { name?: stri
     role: UserRole.Doctor,
     name: (data.name as string) || '',
     surname: (data.surname as string) || '',
+    phoneNumber: (data.phoneNumber as string) || '',
     specialization: Array.isArray(data.specializations) ? (data.specializations as string[]).join(', ') : ((data.specialization as string) || ''),
     bio: (data.bio as string) || '',
   };

@@ -52,6 +52,7 @@ export async function updateUserFields(user: Partial<User> & { id: string } & Re
     name: typeof user.name === 'string' ? user.name : undefined,
     surname: typeof user.surname === 'string' ? user.surname : undefined,
     email: typeof user.email === 'string' ? user.email : undefined,
+    phoneNumber: typeof user.phoneNumber === 'string' ? user.phoneNumber : undefined,
     role: typeof user.role === 'string' ? user.role : undefined,
     approvalStatus: (user as { approvalStatus?: 'pending' | 'approved' }).approvalStatus,
     profilePicture: typeof (user as { profilePicture?: string }).profilePicture === 'string'

@@ -56,6 +56,7 @@ export async function apiUpdateUser(payload: {
     surname?: string;
     role?: string;
     email?: string;
+    phoneNumber?: string;
     approvalStatus?: 'pending' | 'approved';
     profilePicture?: string;
   };
