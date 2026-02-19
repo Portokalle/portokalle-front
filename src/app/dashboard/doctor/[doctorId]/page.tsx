@@ -1,10 +1,6 @@
-
-'use client';
-
 import DoctorProfile from '@/presentation/components/doctor/DoctorProfile';
-import React from 'react';
 
-export default function DoctorPage({ params }: { params: Promise<{ doctorId: string }> }) {
-  const { doctorId } = React.use(params);
+export default async function DoctorPage({ params }: { params: Promise<{ doctorId: string }> }) {
+  const { doctorId } = await params;
   return <DoctorProfile id={doctorId} />;
 }

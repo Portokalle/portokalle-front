@@ -9,12 +9,18 @@ export class FirebaseUserRepository implements IUserRepository {
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) return null;
     const data = userSnap.data();
+    const rawSpecializations = data.specializations ?? data.specialization ?? [];
+    const specialization = Array.isArray(rawSpecializations)
+      ? rawSpecializations.filter((s) => typeof s === 'string' && s.trim().length > 0)
+      : (typeof rawSpecializations === 'string' && rawSpecializations.trim().length > 0
+        ? [rawSpecializations.trim()]
+        : []);
     // Return all doctor profile fields if present
     return {
       id,
       role: data.role,
       name: data.name,
-      specialization: data.specialization ?? [],
+      specialization,
       profilePicture: data.profilePicture ?? '',
       // Add other fields as needed
     };

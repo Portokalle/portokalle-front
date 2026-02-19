@@ -87,12 +87,13 @@ function DoctorDetails({ doctor, onRequestAppointment }: { doctor: Doctor | null
 }
 
 function DoctorList({ title, items, fallback }: { title: string; items?: string[]; fallback: string }) {
+	const safeItems = Array.isArray(items) ? items : [];
 	return (
 		<div>
 			<h3 className="font-semibold text-lg mb-1">{title}</h3>
-			{items && items.length > 0 ? (
+			{safeItems.length > 0 ? (
 				<ul className="list-disc list-inside ml-4">
-					{items.map((item, idx) => (
+					{safeItems.map((item, idx) => (
 						<li key={idx}>{item}</li>
 					))}
 				</ul>
